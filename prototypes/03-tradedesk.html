@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CLNKR ▸ acme-payments-api</title>
+<style>
+  :root {
+    --bg: #0a0d12;
+    --panel: #11151c;
+    --panel-2: #161b24;
+    --panel-3: #1c222d;
+    --border: #283040;
+    --border-strong: #3a4458;
+    --text: #d8dde6;
+    --text-dim: #7c8597;
+    --text-mute: #4a5266;
+    --amber: #ffaa1e;
+    --amber-dim: #c97f00;
+    --cyan: #5ed3f5;
+    --green: #6fe089;
+    --green-bg: #14331b;
+    --red: #ff6363;
+    --red-bg: #3a1414;
+    --note: #ffd166;
+    --note-bg: #3a2a0a;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    font-family: "JetBrains Mono", "IBM Plex Mono", "Berkeley Mono", "Menlo", monospace;
+    color: var(--text);
+    font-size: 12.5px;
+    line-height: 1.45;
+    margin: 0;
+    padding: 0 0 4rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 1.25rem; }
+
+  /* TICKER */
+  .ticker {
+    background: #000;
+    border-bottom: 1px solid var(--border-strong);
+    color: var(--amber);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    padding: 0.42rem 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .ticker .inner { display: inline-block; padding-left: 100%; animation: marquee 60s linear infinite; }
+  .ticker .item { margin: 0 1.6rem; }
+  .ticker .item b { color: var(--text); }
+  .ticker .item .up   { color: var(--green); }
+  .ticker .item .down { color: var(--red); }
+  .ticker .item .flat { color: var(--text-dim); }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+
+  /* TOP STATUS BAR */
+  .topbar {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 11.5px;
+  }
+  .topbar .brand { color: var(--amber); font-weight: 700; letter-spacing: 0.08em; }
+  .topbar .brand b { background: var(--amber); color: #000; padding: 0.06rem 0.35rem; margin-right: 0.4rem; }
+  .topbar .crumb { color: var(--text-dim); }
+  .topbar .crumb b { color: var(--text); }
+  .topbar .stat { color: var(--text-dim); }
+  .topbar .stat b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .topbar .stat.up b   { color: var(--green); }
+  .topbar .stat.down b { color: var(--red); }
+
+  /* HEADER ROW */
+  .header-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    padding: 1.25rem 0 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .panel-title {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    padding: 0.42rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel-2);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .panel-title .tag { color: var(--amber); font-size: 9.5px; letter-spacing: 0.18em; }
+  .panel-body { padding: 0.85rem 1rem 1rem; }
+
+  /* SCORE */
+  .score-main { display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; align-items: end; }
+  .score-big {
+    font-family: inherit;
+    font-size: 5.6rem;
+    line-height: 0.85;
+    font-weight: 700;
+    color: var(--amber);
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-big .slash { color: var(--text-mute); font-weight: 400; }
+  .score-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem 1rem;
+    font-size: 11.5px;
+    padding-bottom: 0.4rem;
+  }
+  .score-meta-grid .k { color: var(--text-dim); text-transform: uppercase; font-size: 10px; letter-spacing: 0.1em; }
+  .score-meta-grid .v { color: var(--text); font-variant-numeric: tabular-nums; }
+  .score-meta-grid .v.amber { color: var(--amber); }
+  .score-meta-grid .v.green { color: var(--green); }
+  .score-meta-grid .v.red   { color: var(--red); }
+  .score-bar {
+    margin-top: 0.85rem;
+    height: 6px;
+    background: var(--panel-3);
+    position: relative;
+    border: 1px solid var(--border);
+  }
+  .score-bar .fill {
+    position: absolute; top: 0; left: 0; bottom: 0;
+    width: 72%;
+    background: linear-gradient(90deg, var(--amber) 0%, var(--amber) 100%);
+  }
+  .score-bar .marker {
+    position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--text-dim);
+  }
+  .score-axis {
+    display: flex; justify-content: space-between;
+    font-size: 9.5px; color: var(--text-mute);
+    margin-top: 0.2rem;
+    letter-spacing: 0.08em;
+  }
+  .score-axis span.thresh { color: var(--text-dim); }
+
+  /* HEATMAP */
+  .heatmap {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 3px;
+  }
+  .cell {
+    aspect-ratio: 1.4 / 1;
+    border: 1px solid transparent;
+    padding: 0.32rem 0.4rem 0.2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: default;
+    transition: outline 0.1s;
+    position: relative;
+  }
+  .cell:hover { outline: 1px solid var(--amber); z-index: 1; }
+  .cell .id { font-size: 10px; color: var(--text-dim); }
+  .cell .lab { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.05; }
+  .cell.ok   { background: var(--green-bg); border-color: rgba(111,224,137,0.35); }
+  .cell.ok   .id { color: var(--green); font-weight: 700; }
+  .cell.ko   { background: var(--red-bg);   border-color: rgba(255,99,99,0.4); }
+  .cell.ko   .id { color: var(--red); font-weight: 700; }
+  .cell.note { background: var(--note-bg);  border-color: rgba(255,209,102,0.35); }
+  .cell.note .id { color: var(--note); font-weight: 700; }
+
+  /* CTA */
+  .cta {
+    margin: 1.25rem 0 1rem;
+    background: var(--panel);
+    border: 1px solid var(--amber-dim);
+    border-left: 3px solid var(--amber);
+    padding: 0.85rem 1rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    align-items: center;
+  }
+  .cta-text .lab {
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 0.2rem;
+  }
+  .cta-text .msg { color: var(--text); font-size: 13px; }
+  .cta-text .sub { color: var(--text-dim); font-size: 11.5px; margin-top: 0.1rem; }
+  .cta-button {
+    background: var(--amber);
+    color: #000;
+    border: none;
+    padding: 0.55rem 1rem;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .cta-button:hover { background: #ffc14d; }
+  .cta-button.copied { background: var(--green); }
+  #clanker-prompt { position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+  /* SECTION HEADERS */
+  .sec {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 1.75rem 0 0.5rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec h2 {
+    margin: 0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .sec .idx { color: var(--text-mute); font-size: 10px; letter-spacing: 0.15em; }
+  .sec .meta { color: var(--text-dim); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+
+  /* PATTERN ROWS */
+  .table-head {
+    display: grid;
+    grid-template-columns: 38px 1fr 70px 90px 120px;
+    gap: 0.6rem;
+    padding: 0.4rem 0.7rem;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    font-size: 9.5px;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+  .table-head span { display: block; }
+  .table-head .alignr { text-align: right; }
+
+  details {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: none;
+  }
+  details + details { border-top: 1px solid var(--border); }
+  details[open] { background: var(--panel-2); }
+  summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 0.5rem 0.7rem;
+    display: grid;
+    grid-template-columns: 38px 1fr 70px 90px 120px;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 12px;
+    transition: background 0.06s;
+  }
+  summary:hover { background: var(--panel-2); }
+  details[open] > summary { background: var(--panel-3); border-bottom: 1px dashed var(--border); }
+  summary::-webkit-details-marker { display: none; }
+  .id {
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+  }
+  .id::before { content: "▸ "; color: var(--text-mute); }
+  details[open] .id::before { content: "▾ "; color: var(--amber); }
+  .pname { color: var(--text); }
+  .w-cell {
+    text-align: right;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    font-size: 11.5px;
+  }
+  .w-cell::after { content: " w"; color: var(--text-mute); font-size: 9.5px; }
+  .delta {
+    font-size: 10.5px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-mute);
+  }
+  .delta.up { color: var(--green); }
+  .delta.down { color: var(--red); }
+  .delta.flat { color: var(--text-dim); }
+
+  .pill {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    padding: 0.18rem 0;
+    border: 1px solid;
+  }
+  .pill.ok   { color: var(--green); border-color: rgba(111,224,137,0.5); background: rgba(20,51,27,0.4); }
+  .pill.ko   { color: var(--red);   border-color: rgba(255,99,99,0.5);  background: rgba(58,20,20,0.5); }
+  .pill.note { color: var(--note);  border-color: rgba(255,209,102,0.4); background: rgba(58,42,10,0.5); }
+
+  .body {
+    padding: 0.5rem 0.7rem 0.85rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+    font-size: 12px;
+  }
+  .blk {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 0.55rem 0.7rem;
+  }
+  .blk.full { grid-column: 1 / -1; }
+  .blk .lab {
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    margin-bottom: 0.3rem;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 0.25rem;
+  }
+  .blk.fix { border-color: var(--red); background: rgba(58,20,20,0.25); }
+  .blk.fix .lab { color: var(--red); border-color: rgba(255,99,99,0.4); }
+  .blk.why .lab { color: var(--cyan); }
+  .blk.good .lab { color: var(--green); }
+  .blk p, .blk ul { margin: 0; color: var(--text); }
+  .blk ul { padding-left: 1.1rem; }
+  .blk ul li { margin: 0.12rem 0; }
+  .blk ul li::marker { color: var(--text-mute); }
+  code {
+    color: var(--amber);
+    background: rgba(255,170,30,0.08);
+    padding: 0 0.2rem;
+    font-size: 0.9em;
+  }
+
+  @media (max-width: 900px) {
+    .header-row, .body { grid-template-columns: 1fr; }
+    .heatmap { grid-template-columns: repeat(6, 1fr); }
+    .table-head, summary { grid-template-columns: 30px 1fr 50px 100px; }
+    .table-head .delta-col, .delta { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ticker">
+  <div class="inner">
+    <span class="item"><b>CLNKR-IDX</b> 72.0 <span class="down">-3.4</span></span>
+    <span class="item"><b>P03 REPO-MAP</b> KO <span class="down">▼</span></span>
+    <span class="item"><b>P05 CLAUDE.MD</b> NOTE <span class="flat">▬</span></span>
+    <span class="item"><b>P06 NOISE</b> KO <span class="down">▼</span></span>
+    <span class="item"><b>P07 SYMBOLS</b> OK <span class="up">▲</span></span>
+    <span class="item"><b>P09 HOOKS</b> KO <span class="down">▼</span></span>
+    <span class="item"><b>P13 PERMS</b> KO <span class="down">▼</span></span>
+    <span class="item"><b>P17 SUBAGENTS</b> OK <span class="up">▲</span></span>
+    <span class="item"><b>SESS</b> 0x7af2 · <b>RT</b> 14:32 CEST · <b>NODE</b> clnk-2 · <b>BUILD</b> 1.4.0</span>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="topbar">
+  <div class="brand"><b>CLNKR</b>TERM</div>
+  <div class="crumb">▸ AUDIT ▸ <b>acme-payments-api</b></div>
+  <div></div>
+  <div class="stat">CKPT <b>2026-05-25 14:32 CEST</b></div>
+  <div class="stat down">SCORE <b>72/100 ▼3.4</b></div>
+</div>
+
+<div class="header-row">
+
+  <div class="panel">
+    <div class="panel-title">
+      <span>CLNKR INDEX · WEIGHTED ACROSS 18 PATTERNS</span>
+      <span class="tag">[BAND: AMBER]</span>
+    </div>
+    <div class="panel-body">
+      <div class="score-main">
+        <div class="score-big">72<span class="slash">/100</span></div>
+        <div class="score-meta-grid">
+          <div class="k">VERDICT</div><div class="v amber">NEEDS ATTENTION</div>
+          <div class="k">PRIOR</div><div class="v">75.4</div>
+          <div class="k">Δ 7D</div><div class="v red">-3.4 (-4.5%)</div>
+          <div class="k">PATTERNS</div><div class="v">18 / 18 RESPONDED</div>
+        </div>
+      </div>
+      <div class="score-bar">
+        <div class="fill"></div>
+        <div class="marker" style="left:60%;"></div>
+        <div class="marker" style="left:80%;"></div>
+      </div>
+      <div class="score-axis">
+        <span>0</span>
+        <span class="thresh">↑60 amb</span>
+        <span class="thresh">↑80 grn</span>
+        <span>100</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">
+      <span>PATTERN HEATMAP · 18 CELLS</span>
+      <span class="tag">[click cell to scroll]</span>
+    </div>
+    <div class="panel-body">
+      <div class="heatmap">
+        <a class="cell ok"   href="#p1"><span class="id">01</span><span class="lab">REPRO ENV</span></a>
+        <a class="cell ok"   href="#p2"><span class="id">02</span><span class="lab">PM PIN</span></a>
+        <a class="cell ko"   href="#p3"><span class="id">03</span><span class="lab">REPO MAP</span></a>
+        <a class="cell ok"   href="#p4"><span class="id">04</span><span class="lab">CASCADE</span></a>
+        <a class="cell note" href="#p5"><span class="id">05</span><span class="lab">CLAUDE.MD</span></a>
+        <a class="cell ko"   href="#p6"><span class="id">06</span><span class="lab">NOISE</span></a>
+        <a class="cell ok"   href="#p7"><span class="id">07</span><span class="lab">SYMBOLS</span></a>
+        <a class="cell note" href="#p8"><span class="id">08</span><span class="lab">DISCOV</span></a>
+        <a class="cell ko"   href="#p9"><span class="id">09</span><span class="lab">HOOKS</span></a>
+        <a class="cell ok"   href="#p10"><span class="id">10</span><span class="lab">VERIFY</span></a>
+        <a class="cell ok"   href="#p11"><span class="id">11</span><span class="lab">CI PAR</span></a>
+        <a class="cell ok"   href="#p12"><span class="id">12</span><span class="lab">FOCUS T.</span></a>
+        <a class="cell ko"   href="#p13"><span class="id">13</span><span class="lab">PERMS</span></a>
+        <a class="cell ok"   href="#p14"><span class="id">14</span><span class="lab">HYGIENE</span></a>
+        <a class="cell note" href="#p15"><span class="id">15</span><span class="lab">JIT SKILL</span></a>
+        <a class="cell note" href="#p16"><span class="id">16</span><span class="lab">PR HYG</span></a>
+        <a class="cell ok"   href="#p17"><span class="id">17</span><span class="lab">SUBAGTS</span></a>
+        <a class="cell note" href="#p18"><span class="id">18</span><span class="lab">HARNESS</span></a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="cta">
+  <div class="cta-text">
+    <div class="lab">// ACTION REQUIRED</div>
+    <div class="msg">Ask your clanker to fix the 3 failing patterns in parallel.</div>
+    <div class="sub">One subagent per section, dispatched concurrently. Prompt is generated from the failing cards below.</div>
+  </div>
+  <button type="button" class="cta-button" id="copy-prompt-btn">▸ COPY PROMPT</button>
+</div>
+<textarea id="clanker-prompt" readonly aria-hidden="true" tabindex="-1">You are a coding agent tasked with improving this repository's coding-agent efficiency setup, based on a /clanker-score audit (score: 72/100, generated 2026-05-25 14:32 CEST). [...]</textarea>
+
+<div class="sec"><span class="idx">SEC 1 / 5</span><h2>Agent Efficiency Foundations</h2><span class="meta">patterns 01–05 · weight 29</span></div>
+<div class="table-head"><span>ID</span><span>PATTERN</span><span class="alignr">WGT</span><span class="alignr">STATUS</span><span class="delta-col alignr">Δ vs PRIOR</span></div>
+
+<details id="p1">
+  <summary><span class="id">01</span><span class="pname">REPRODUCIBLE DEVELOPMENT ENVIRONMENT</span><span class="w-cell">6</span><span class="pill ok">OK</span><span class="delta flat">— FLAT</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>A fresh clone of <code>acme-payments-api</code> must boot without tribal knowledge. Every minute decoding undocumented setup is a minute not shipping.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>Documented commands tied to real files: Dockerfile, Makefile, or a CLAUDE.md setup section that matches what the codebase actually uses.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li><code>Makefile</code> exposes <code>make bootstrap</code>, <code>make dev</code>, <code>make test</code></li>
+      <li><code>.devcontainer/devcontainer.json</code> references the same Makefile targets</li>
+      <li><code>CLAUDE.md</code> §Setup matches the Makefile — no drift</li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p2">
+  <summary><span class="id">02</span><span class="pname">PACKAGE MANAGER &amp; RUNTIME PINNING</span><span class="w-cell">4</span><span class="pill ok">OK</span><span class="delta flat">— FLAT</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Mismatched managers break builds and corrupt lockfiles.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>One package manager per ecosystem, one lockfile, runtime pinned.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li><code>.nvmrc</code> pins Node 20.11.1; <code>packageManager</code> = <code>pnpm@9.4.0</code></li>
+      <li>Single <code>pnpm-lock.yaml</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p3">
+  <summary><span class="id">03</span><span class="pname">REPO MAP</span><span class="w-cell">5</span><span class="pill ko">KO</span><span class="delta down">▼ NEW</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Without a top-level map, agents grep the whole tree. In a monorepo this costs hundreds of exploratory calls.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>REPO_MAP.md (or labeled README section) with one-line purpose per top-level folder.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>No <code>REPO_MAP.md</code> at root</li>
+      <li>14 top-level folders undocumented</li>
+      <li><code>pnpm-workspace.yaml</code> declares 9 packages without descriptions</li>
+    </ul></div>
+    <div class="blk fix full"><div class="lab">// REMEDIATION</div><ul>
+      <li>Create <code>REPO_MAP.md</code> with one-line purpose per top-level folder</li>
+      <li>Link from <code>CLAUDE.md</code> §Layout → <code>REPO_MAP.md</code></li>
+      <li>Add owner + entry point for each <code>apps/*</code> package</li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p4">
+  <summary><span class="id">04</span><span class="pname">CONTEXT CASCADE</span><span class="w-cell">4</span><span class="pill ok">OK</span><span class="delta up">▲ +1</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>A bloated root CLAUDE.md forces every task to load mostly-irrelevant guidance.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>Root &lt; 200 lines; subtree files carry local rules.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>Root <code>CLAUDE.md</code> 142 lines</li>
+      <li>Subtree files at <code>apps/settle-api/</code> and <code>apps/dashboard-web/</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p5">
+  <summary><span class="id">05</span><span class="pname">CLAUDE.MD QUALITY</span><span class="w-cell">10</span><span class="pill note">NOTE</span><span class="delta flat">— FLAT</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Generic platitudes and stale instructions cost context without value.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>Concise, repo-specific. Captures what cannot be derived from reading files.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>Strong on commands, branch conventions, Stripe-webhook gotcha</li>
+      <li>Bottom 30 lines reads like generic filler — trim candidate</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="sec"><span class="idx">SEC 2 / 5</span><h2>Context &amp; Tooling</h2><span class="meta">patterns 06–08 · weight 19</span></div>
+<div class="table-head"><span>ID</span><span>PATTERN</span><span class="alignr">WGT</span><span class="alignr">STATUS</span><span class="delta-col alignr">Δ vs PRIOR</span></div>
+
+<details id="p6">
+  <summary><span class="id">06</span><span class="pname">NOISE FILTER</span><span class="w-cell">6</span><span class="pill ko">KO</span><span class="delta down">▼ NEW</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Searchable generated and vendored folders bury real signal under build artifacts.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>Committed <code>.claude/settings.json</code> with <code>permissions.deny</code> for noisy paths.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li><code>.claude/settings.json</code> has no <code>permissions.deny</code> block</li>
+      <li>Repo contains <code>packages/sdk-js/dist/</code> (3.2 MB), <code>infra/cdk.out/</code>, <code>coverage/</code></li>
+      <li>Only filter is in <code>settings.local.json</code> (one machine)</li>
+    </ul></div>
+    <div class="blk fix full"><div class="lab">// REMEDIATION</div><ul>
+      <li>Add <code>Read(packages/*/dist/**)</code>, <code>Read(infra/cdk.out/**)</code>, <code>Read(coverage/**)</code> to <code>permissions.deny</code></li>
+      <li>Commit; remove dup from <code>.claude/settings.local.json</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p7">
+  <summary><span class="id">07</span><span class="pname">SYMBOL LOOKUP</span><span class="w-cell">8</span><span class="pill ok">OK</span><span class="delta up">▲ +0</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>LSP-backed lookup turns a multi-step grep into one deterministic call.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>MCP server with LSP for the dominant languages.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li><code>.mcp.json</code> registers <code>serena</code> with TS + Python LSPs</li>
+      <li>~98% of source coverage</li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p8">
+  <summary><span class="id">08</span><span class="pname">LARGE-REPO FILE DISCOVERY</span><span class="w-cell">5</span><span class="pill note">NOTE</span><span class="delta flat">— FLAT</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Blind grep in a monorepo produces slow noisy results.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>REPO_MAP.md, workspace manifest, or "find files" CLAUDE.md section.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li><code>pnpm-workspace.yaml</code> + <code>turbo.json</code> exist</li>
+      <li>No explicit "find files" section in CLAUDE.md</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="sec"><span class="idx">SEC 3 / 5</span><h2>Verification &amp; Safety</h2><span class="meta">patterns 09–14 · weight 38</span></div>
+<div class="table-head"><span>ID</span><span>PATTERN</span><span class="alignr">WGT</span><span class="alignr">STATUS</span><span class="delta-col alignr">Δ vs PRIOR</span></div>
+
+<details id="p9">
+  <summary><span class="id">09</span><span class="pname">DETERMINISTIC CHECKS</span><span class="w-cell">10</span><span class="pill ko">KO</span><span class="delta down">▼ NEW</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>"Remember to run the linter" in prose gets forgotten. Hooks make checks unavoidable.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p><code>.claude/settings.json</code> wires <code>PostToolUse</code> hooks to real lint/typecheck/test commands.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>No <code>hooks</code> block in <code>.claude/settings.json</code></li>
+      <li>Scripts <code>pnpm lint</code>, <code>pnpm typecheck</code>, <code>pnpm test</code> exist</li>
+    </ul></div>
+    <div class="blk fix full"><div class="lab">// REMEDIATION</div><ul>
+      <li>Add <code>hooks.PostToolUse</code> matching Edit|Write|MultiEdit → <code>pnpm lint --filter ...[changed]</code></li>
+      <li>Wire <code>*.ts</code> files → <code>pnpm typecheck</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p10">
+  <summary><span class="id">10</span><span class="pname">VERIFIABLE WORK LOOP</span><span class="w-cell">9</span><span class="pill ok">OK</span><span class="delta flat">— FLAT</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Without exact verification commands, the agent stops short.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>Explicit Verification section with exact commands.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>CLAUDE.md §Verification lists 6 commands; <code>make verify</code> wraps them</li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p11">
+  <summary><span class="id">11</span><span class="pname">CI PARITY</span><span class="w-cell">4</span><span class="pill ok">OK</span><span class="delta up">▲ +0</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Local checks weaker than CI mean rework.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>Every CI check has a local equivalent.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>ci.yml calls the same <code>make verify</code></li>
+      <li>Divergence: <code>pnpm audit</code> only in CI (flagged in CLAUDE.md)</li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p12">
+  <summary><span class="id">12</span><span class="pname">FAST FEEDBACK / FOCUSED TESTS</span><span class="w-cell">6</span><span class="pill ok">OK</span><span class="delta flat">— FLAT</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Full-suite-only docs cause agents to wait minutes or skip tests.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>Document single-file, package, and full-suite commands.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>CLAUDE.md shows <code>pnpm --filter settle-api test path/to/file.test.ts</code></li>
+      <li><code>test:watch</code>, <code>test:focused</code> present</li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p13">
+  <summary><span class="id">13</span><span class="pname">PERMISSION HARDENING</span><span class="w-cell">6</span><span class="pill ko">KO</span><span class="delta down">▼ NEW</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Without deny rules, one bad call can leak secrets, corrupt git, or wipe local work.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>Committed deny rules for destructive bash and sensitive files.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li><code>permissions.deny</code> has only 2 generic patterns</li>
+      <li>No <code>git push --force*</code>, <code>git reset --hard</code>, <code>rm -rf</code> deny</li>
+      <li><code>.env</code> and <code>.pem</code> reads not denied</li>
+    </ul></div>
+    <div class="blk fix full"><div class="lab">// REMEDIATION</div><ul>
+      <li>Add <code>Bash(git push --force*)</code>, <code>Bash(git reset --hard*)</code>, <code>Bash(rm -rf*)</code></li>
+      <li>Add <code>Read(.env*)</code> (except .env.example), <code>Read(**/*.pem)</code>, <code>Read(**/secrets/**)</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p14">
+  <summary><span class="id">14</span><span class="pname">LOCAL CONFIG HYGIENE</span><span class="w-cell">3</span><span class="pill ok">OK</span><span class="delta flat">— FLAT</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Ungitignored local config leaks into history.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>.gitignore covers local Claude files, .env variants, .pem.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li><code>.gitignore</code> lines 24–31 cover all patterns</li>
+      <li>No tracked files match</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="sec"><span class="idx">SEC 4 / 5</span><h2>Reusable Agent Workflows</h2><span class="meta">patterns 15–17 · weight 10</span></div>
+<div class="table-head"><span>ID</span><span>PATTERN</span><span class="alignr">WGT</span><span class="alignr">STATUS</span><span class="delta-col alignr">Δ vs PRIOR</span></div>
+
+<details id="p15">
+  <summary><span class="id">15</span><span class="pname">JUST-IN-TIME SKILL</span><span class="w-cell">3</span><span class="pill note">NOTE</span><span class="delta flat">— FLAT</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Stuffing every workflow into CLAUDE.md wastes context.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p><code>.claude/skills/</code> with narrow, well-described skills.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>Two skills: <code>release/</code>, <code>db-migration/</code></li>
+      <li>Legacy <code>.claude/commands/security-review.md</code> still around</li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p16">
+  <summary><span class="id">16</span><span class="pname">AGENT OUTPUT / PR HYGIENE</span><span class="w-cell">3</span><span class="pill note">NOTE</span><span class="delta flat">— FLAT</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Without expectations, agent PR summaries omit tests, risks, rollback.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>PR template + CLAUDE.md PR section.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>PR template covers summary + tests, no rollback</li>
+      <li>Attribution policy not stated</li>
+    </ul></div>
+  </div>
+</details>
+
+<details id="p17">
+  <summary><span class="id">17</span><span class="pname">CUSTOM SUBAGENTS</span><span class="w-cell">4</span><span class="pill ok">OK</span><span class="delta up">▲ +1</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Recurring high-risk reviews benefit from focused subagents.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p><code>.claude/agents/</code> matched to risk surface.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>Three subagents: payment-flow-reviewer, db-migration-reviewer, webhook-replay-tester</li>
+      <li>All read-only with tool allowlists</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="sec"><span class="idx">SEC 5 / 5</span><h2>Team Rollout &amp; Continuous Improvement</h2><span class="meta">pattern 18 · weight 4</span></div>
+<div class="table-head"><span>ID</span><span>PATTERN</span><span class="alignr">WGT</span><span class="alignr">STATUS</span><span class="delta-col alignr">Δ vs PRIOR</span></div>
+
+<details id="p18">
+  <summary><span class="id">18</span><span class="pname">HARNESS BUNDLE</span><span class="w-cell">4</span><span class="pill note">NOTE</span><span class="delta flat">— FLAT</span></summary>
+  <div class="body">
+    <div class="blk why"><div class="lab">// WHY IT MATTERS</div><p>Config locked to one repo doesn't propagate. A plugin lets the team apply it everywhere.</p></div>
+    <div class="blk good"><div class="lab">// TARGET STATE</div><p>Plugin or shared marketplace bundle.</p></div>
+    <div class="blk full"><div class="lab">// OBSERVED</div><ul>
+      <li>References <code>@acme/clanker-harness@1.4.0</code> via <code>enabledPlugins</code></li>
+      <li>Only 4 of 11 team repos consume it</li>
+    </ul></div>
+  </div>
+</details>
+
+</div>
+
+<script>
+(function () {
+  var btn = document.getElementById('copy-prompt-btn');
+  var src = document.getElementById('clanker-prompt');
+  if (!btn || !src) return;
+  var orig = btn.textContent;
+  btn.addEventListener('click', function () {
+    var done = function () {
+      btn.textContent = '✓ COPIED';
+      btn.classList.add('copied');
+      setTimeout(function () { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(src.value).then(done, function () {
+        src.style.left = '0'; src.select(); document.execCommand('copy'); src.style.left = '-9999px'; done();
+      });
+    } else {
+      src.style.left = '0'; src.select(); document.execCommand('copy'); src.style.left = '-9999px'; done();
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Clanker Review — acme-payments-api</title>
+<style>
+  :root {
+    --paper: #f3ede0;
+    --paper-2: #ece4d2;
+    --ink: #111111;
+    --ink-soft: #2b2723;
+    --ink-faint: #6e6357;
+    --rule: #1a1a1a;
+    --accent-red: #a3221c;
+    --accent-amber: #b07d18;
+    --accent-green: #2f5a2a;
+    --pastel-red: #f0ddd7;
+    --pastel-amber: #efe1bc;
+    --pastel-green: #d9e3ce;
+    --pastel-blue: #d9dfe3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    background-image:
+      radial-gradient(rgba(80,60,40,0.05) 1px, transparent 1px),
+      radial-gradient(rgba(80,60,40,0.03) 1px, transparent 1px);
+    background-size: 3px 3px, 7px 7px;
+    background-position: 0 0, 1px 1px;
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Hoefler Text", "Source Serif Pro", Georgia, "Times New Roman", serif;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 5rem;
+    line-height: 1.55;
+  }
+  /* Masthead */
+  .masthead {
+    border-top: 4px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 0.5rem 0 0.7rem;
+    margin-bottom: 0.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: "Helvetica Neue", "Arial Narrow", Arial, sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .masthead .left b { font-weight: 700; letter-spacing: 0.22em; }
+  .masthead .right { font-variant-numeric: tabular-nums; }
+  .masthead .right span { color: var(--ink-faint); margin: 0 0.5rem; }
+
+  /* Front-page title */
+  .hero {
+    border-bottom: 2px solid var(--rule);
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .kicker {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    font-size: 0.7rem;
+    color: var(--accent-red);
+    font-weight: 700;
+    margin: 0.6rem 0 0.4rem;
+  }
+  h1.title {
+    margin: 0;
+    font-size: 4.3rem;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    font-family: "Iowan Old Style", "Hoefler Text", Georgia, serif;
+    font-style: italic;
+  }
+  h1.title em { font-style: normal; }
+  .deck {
+    margin: 0.9rem 0 0;
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    font-style: italic;
+    max-width: 780px;
+  }
+  .byline {
+    margin-top: 1rem;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+  }
+  .byline b { color: var(--ink); }
+
+  /* Score lockup */
+  .score-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 280px) 1fr;
+    gap: 2rem;
+    align-items: end;
+    margin: 1.8rem 0 0.6rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .score-num {
+    font-size: 11rem;
+    line-height: 0.82;
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent-amber);
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.08);
+  }
+  .score-num sup {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0;
+    margin-left: 0.4rem;
+    vertical-align: 0.4em;
+  }
+  .score-meta {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    border-left: 1px solid var(--rule);
+    padding-left: 1.6rem;
+    padding-bottom: 0.6rem;
+  }
+  .score-meta .label {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    margin-bottom: 0.4rem;
+  }
+  .score-meta .band {
+    font-family: "Iowan Old Style", Georgia, serif;
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--accent-amber);
+    line-height: 1.1;
+    margin-bottom: 0.85rem;
+  }
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    font-size: 0.82rem;
+  }
+  .verdict-grid div {
+    border-top: 1px solid var(--rule);
+    padding-top: 0.35rem;
+  }
+  .verdict-grid div b {
+    display: block;
+    font-size: 1.5rem;
+    line-height: 1.1;
+    font-family: "Iowan Old Style", Georgia, serif;
+    font-weight: 700;
+  }
+  .verdict-grid div span {
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 0.66rem;
+    color: var(--ink-faint);
+  }
+
+  /* CTA — looks like a classifieds box */
+  .cta {
+    margin: 1.4rem 0 1.8rem;
+    border: 2px solid var(--rule);
+    background: var(--pastel-amber);
+    padding: 1.1rem 1.3rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+    position: relative;
+  }
+  .cta::before {
+    content: "ADVERT.";
+    position: absolute;
+    top: -0.7rem;
+    left: 1rem;
+    background: var(--paper);
+    padding: 0 0.5rem;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: var(--ink-faint);
+    font-weight: 700;
+  }
+  .cta h3 {
+    margin: 0 0 0.3rem;
+    font-family: "Iowan Old Style", Georgia, serif;
+    font-style: italic;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  .cta p {
+    margin: 0;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.83rem;
+    color: var(--ink-soft);
+    max-width: 540px;
+  }
+  .cta-button {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 0.8rem 1.4rem;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .cta-button:hover { background: var(--accent-red); }
+  .cta-button.copied { background: var(--accent-green); }
+  #clanker-prompt { position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+  /* Section heads */
+  .section {
+    margin-top: 2.6rem;
+    margin-bottom: 0.6rem;
+    border-top: 2px solid var(--rule);
+    padding-top: 0.4rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+  }
+  .section h2 {
+    margin: 0;
+    font-family: "Iowan Old Style", Georgia, serif;
+    font-size: 1.55rem;
+    font-style: italic;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .section h2 em { font-style: normal; color: var(--ink-faint); font-weight: 400; }
+  .section .sec-tag {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.66rem;
+    color: var(--ink-faint);
+  }
+
+  /* Pattern cards */
+  details {
+    border-bottom: 1px solid rgba(0,0,0,0.18);
+    padding: 0.85rem 0;
+    margin: 0;
+  }
+  details:last-of-type { border-bottom: 1px solid var(--rule); }
+  details[open] {
+    background:
+      linear-gradient(var(--paper-2), var(--paper-2));
+    background-size: 100% 100%;
+    margin: 0 -1rem;
+    padding: 0.85rem 1rem;
+  }
+  summary {
+    cursor: pointer;
+    list-style: none;
+    display: grid;
+    grid-template-columns: 3.5rem 1fr auto auto;
+    align-items: baseline;
+    gap: 1rem;
+    user-select: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  .num {
+    font-family: "Iowan Old Style", Georgia, serif;
+    font-size: 2.3rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .num small {
+    display: block;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-top: 0.15rem;
+  }
+  .pname {
+    font-family: "Iowan Old Style", Georgia, serif;
+    font-size: 1.35rem;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  .pname span {
+    display: block;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    font-weight: 600;
+    margin-top: 0.15rem;
+  }
+  .w {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    font-weight: 700;
+  }
+  .pill {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    border: 2px solid;
+    padding: 0.22rem 0.7rem;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    line-height: 1;
+    align-self: center;
+  }
+  .ok   { border-color: var(--accent-green); color: var(--accent-green); }
+  .ko   { border-color: var(--accent-red);   color: var(--accent-red); background: var(--paper); }
+  .note { border-color: var(--accent-amber); color: var(--accent-amber); }
+
+  .body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.4rem 2.2rem;
+    margin-top: 1.2rem;
+    border-top: 1px solid rgba(0,0,0,0.2);
+    padding-top: 1.1rem;
+  }
+  .block { font-size: 0.95rem; }
+  .block h4 {
+    margin: 0 0 0.4rem;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.68rem;
+    color: var(--ink-faint);
+    font-weight: 700;
+    border-bottom: 1px dotted var(--ink-faint);
+    padding-bottom: 0.25rem;
+  }
+  .block.why h4, .block.good h4 { color: var(--ink); border-color: var(--ink); }
+  .block.fix { grid-column: 1 / -1; background: var(--pastel-red); padding: 1rem 1.2rem; border-left: 4px solid var(--accent-red); }
+  .block.fix h4 { color: var(--accent-red); border-color: var(--accent-red); }
+  .block.current { grid-column: 1 / -1; }
+  .block p, .block ul { margin: 0; }
+  .block ul { padding-left: 1.2rem; }
+  .block ul li { margin: 0.15rem 0; }
+  .block ul li::marker { color: var(--ink-faint); }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    background: rgba(0,0,0,0.05);
+    padding: 0.05rem 0.3rem;
+    font-size: 0.86em;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 740px) {
+    .score-row { grid-template-columns: 1fr; }
+    .body { grid-template-columns: 1fr; }
+    h1.title { font-size: 2.8rem; }
+    .score-num { font-size: 7rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="left"><b>THE CLANKER REVIEW</b> &nbsp;· Vol. III &nbsp;· No. 47</div>
+  <div class="right">Mon. <span>—</span> 25 May 2026 <span>—</span> 14:32 CEST</div>
+</div>
+
+<div class="hero">
+  <div class="kicker">Coding-Agent Efficiency Audit · acme-payments-api</div>
+  <h1 class="title">A repository <em>halfway</em><br>to being clanker-ready.</h1>
+  <p class="deck">Solid foundations and clean hygiene, undone by two structural omissions: no permission deny block, no PostToolUse hooks. The agent can do its work, but not without you watching.</p>
+  <div class="byline">By the audit panel &nbsp;·&nbsp; <b>18 patterns reviewed in parallel</b> &nbsp;·&nbsp; reading time ~ 6 min</div>
+</div>
+
+<div class="score-row">
+  <div class="score-num">72<sup>/100</sup></div>
+  <div class="score-meta">
+    <div class="label">Verdict</div>
+    <div class="band">"Promising, with two glaring gaps."</div>
+    <div class="verdict-grid">
+      <div><b>11</b><span>passing</span></div>
+      <div><b>4</b><span>passing w/ note</span></div>
+      <div><b>3</b><span>failing</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="cta">
+  <div>
+    <h3>Want your clanker to fix this for you?</h3>
+    <p>One prompt, dispatched in parallel across the failing sections. Paste it into a fresh Claude Code session. No coordination required.</p>
+  </div>
+  <button type="button" class="cta-button" id="copy-prompt-btn">Copy the prompt</button>
+</div>
+<textarea id="clanker-prompt" readonly aria-hidden="true" tabindex="-1">You are a coding agent tasked with improving this repository's coding-agent efficiency setup, based on a /clanker-score audit (score: 72/100, generated 2026-05-25 14:32 CEST). [...]</textarea>
+
+<div class="section">
+  <h2><em>I.</em> Agent Efficiency Foundations</h2>
+  <div class="sec-tag">Patterns 01 — 05</div>
+</div>
+
+<details>
+  <summary>
+    <div class="num">01<small>Pattern</small></div>
+    <div class="pname">Reproducible Development Environment<span>Can a fresh clone boot?</span></div>
+    <div class="w">w. 6</div>
+    <div class="pill ok">Pass</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>A fresh clone of <code>acme-payments-api</code> must boot without tribal knowledge. Every minute decoding undocumented setup is a minute not spent shipping.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>Documented commands tied to real files: Dockerfile, Makefile, or a CLAUDE.md setup section that matches what the codebase actually uses.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>Makefile</code> exposes <code>make bootstrap</code>, <code>make dev</code>, <code>make test</code></li>
+      <li><code>.devcontainer/devcontainer.json</code> present, references the same Makefile targets</li>
+      <li><code>CLAUDE.md</code> §Setup lists the exact same commands — no drift</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">02<small>Pattern</small></div>
+    <div class="pname">Package Manager &amp; Runtime Pinning<span>One toolchain, one lockfile</span></div>
+    <div class="w">w. 4</div>
+    <div class="pill ok">Pass</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Mismatched package managers and runtimes break builds, corrupt lockfiles, and diverge from production.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>One package manager per ecosystem with a single lockfile and pinned runtime.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>.nvmrc</code> pins Node 20.11.1, <code>packageManager</code> = <code>pnpm@9.4.0</code></li>
+      <li>Single <code>pnpm-lock.yaml</code>; no stray <code>package-lock.json</code> or <code>yarn.lock</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">03<small>Pattern</small></div>
+    <div class="pname">Repo Map<span>The reader's compass</span></div>
+    <div class="w">w. 5</div>
+    <div class="pill ko">Fail</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Without a top-level map, agents grep the whole tree to find features and waste tokens — especially in monorepos. A 30-line map saves hundreds of exploratory calls.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>A REPO_MAP.md, or labeled README section, listing every top-level folder with a one-line purpose. Coverage matches the actual <code>ls</code> output.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li>No <code>REPO_MAP.md</code> at root</li>
+      <li>14 top-level folders (apps/, packages/, infra/, scripts/, …) — none documented</li>
+      <li><code>pnpm-workspace.yaml</code> declares 9 packages with no descriptions</li>
+    </ul></div>
+    <div class="block fix"><h4>What to do to make clanker happy</h4><ul>
+      <li>Create <code>REPO_MAP.md</code> with one-line purpose per top-level folder</li>
+      <li>Link from <code>CLAUDE.md</code> §Layout → <code>REPO_MAP.md</code></li>
+      <li>Add owner + entry point for each apps/* package (settle-api, dashboard-web, webhooks-worker)</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">04<small>Pattern</small></div>
+    <div class="pname">Context Cascade<span>Keep the root file lean</span></div>
+    <div class="w">w. 4</div>
+    <div class="pill ok">Pass</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>A single bloated CLAUDE.md forces every task to load thousands of lines of mostly-irrelevant guidance.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>Root stays under ~200 lines; subtree CLAUDE.md files carry local rules.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li>Root <code>CLAUDE.md</code> is 142 lines</li>
+      <li>Subtree files at <code>apps/settle-api/CLAUDE.md</code> and <code>apps/dashboard-web/CLAUDE.md</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">05<small>Pattern</small></div>
+    <div class="pname">CLAUDE.md Quality<span>Repo-specific, or filler?</span></div>
+    <div class="w">w. 10</div>
+    <div class="pill note">Pass · with note</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Generic platitudes and stale instructions cost context without adding value, and sometimes mislead.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>Concise, repo-specific. Captures what cannot be derived from reading files.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li>Strong on commands, branch conventions, and the Stripe-webhook signing gotcha</li>
+      <li>Bottom 30 lines reads like generic filler — could be trimmed</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="section">
+  <h2><em>II.</em> Context &amp; Tooling</h2>
+  <div class="sec-tag">Patterns 06 — 08</div>
+</div>
+
+<details>
+  <summary>
+    <div class="num">06<small>Pattern</small></div>
+    <div class="pname">Noise Filter<span>Keep generated code out of grep</span></div>
+    <div class="w">w. 6</div>
+    <div class="pill ko">Fail</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>When generated and vendored folders are searchable, every grep returns hundreds of irrelevant hits.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>Committed <code>.claude/settings.json</code> with <code>permissions.deny</code> for noisy paths that actually exist.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>.claude/settings.json</code> exists but has no <code>permissions.deny</code> block</li>
+      <li>Repo contains <code>packages/sdk-js/dist/</code> (3.2 MB), <code>infra/cdk.out/</code>, <code>coverage/</code> — all searchable</li>
+      <li>Only filter is in <code>.claude/settings.local.json</code> (one developer's machine)</li>
+    </ul></div>
+    <div class="block fix"><h4>What to do to make clanker happy</h4><ul>
+      <li>Add to <code>.claude/settings.json</code> → <code>permissions.deny</code>: <code>Read(packages/*/dist/**)</code>, <code>Read(infra/cdk.out/**)</code>, <code>Read(coverage/**)</code></li>
+      <li>Commit the file; remove duplicate rules from <code>.claude/settings.local.json</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">07<small>Pattern</small></div>
+    <div class="pname">Symbol Lookup<span>LSP over grep</span></div>
+    <div class="w">w. 8</div>
+    <div class="pill ok">Pass</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>LSP-backed lookup turns a multi-step grep into one deterministic call.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>An MCP server with LSP support (e.g. serena) configured for the dominant languages.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>.mcp.json</code> registers <code>serena</code> with TypeScript + Python LSPs</li>
+      <li>Covers ~98% of source lines</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">08<small>Pattern</small></div>
+    <div class="pname">Large-Repo File Discovery<span>Where does X live?</span></div>
+    <div class="w">w. 5</div>
+    <div class="pill note">Pass · with note</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Blind grep and find in a monorepo produce slow noisy results.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>REPO_MAP.md, workspace manifest, or a "how to find files" CLAUDE.md section.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>pnpm-workspace.yaml</code> + <code>turbo.json</code> provide structure</li>
+      <li>No explicit "find files" section in CLAUDE.md</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="section">
+  <h2><em>III.</em> Verification &amp; Safety</h2>
+  <div class="sec-tag">Patterns 09 — 14</div>
+</div>
+
+<details>
+  <summary>
+    <div class="num">09<small>Pattern</small></div>
+    <div class="pname">Deterministic Checks<span>Don't trust prose</span></div>
+    <div class="w">w. 10</div>
+    <div class="pill ko">Fail</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>"Remember to run the linter" in prose gets forgotten. Hooks make checks unavoidable.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p><code>.claude/settings.json</code> wires <code>PostToolUse</code> hooks on Edit/Write to real lint/typecheck/test commands.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li>No <code>hooks</code> block in <code>.claude/settings.json</code></li>
+      <li>Scripts <code>pnpm lint</code>, <code>pnpm typecheck</code>, <code>pnpm test</code> all exist</li>
+    </ul></div>
+    <div class="block fix"><h4>What to do to make clanker happy</h4><ul>
+      <li>Add <code>hooks.PostToolUse</code> matching Edit|Write|MultiEdit → <code>pnpm lint --filter ...[changed]</code></li>
+      <li>Wire a second hook for <code>*.ts</code> files → <code>pnpm typecheck</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">10<small>Pattern</small></div>
+    <div class="pname">Verifiable Work Loop<span>Can the agent prove the work?</span></div>
+    <div class="w">w. 9</div>
+    <div class="pill ok">Pass</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>An agent that can't verify its own work has to hand back to a human just to know if tests pass.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>Explicit Verification section with exact commands.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>CLAUDE.md</code> §Verification lists 6 commands; <code>make verify</code> wraps them</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">11<small>Pattern</small></div>
+    <div class="pname">CI Parity<span>Local equals pipeline</span></div>
+    <div class="w">w. 4</div>
+    <div class="pill ok">Pass</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Local checks weaker than CI mean rework. Every CI-only check is a trap.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>Each CI check has a local equivalent.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>ci.yml</code> calls the same <code>make verify</code> documented in CLAUDE.md</li>
+      <li>Only divergence is <code>pnpm audit</code> — flagged in CLAUDE.md</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">12<small>Pattern</small></div>
+    <div class="pname">Fast Feedback / Focused Tests<span>One file at a time</span></div>
+    <div class="w">w. 6</div>
+    <div class="pill ok">Pass</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>If only the full suite is documented, agents wait minutes or skip tests entirely.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>Document single-file, package, and full-suite test commands with examples.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li>CLAUDE.md shows <code>pnpm --filter settle-api test path/to/file.test.ts</code></li>
+      <li><code>test:watch</code> and <code>test:focused</code> scripts present</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">13<small>Pattern</small></div>
+    <div class="pname">Permission Hardening<span>Stop the destructive call</span></div>
+    <div class="w">w. 6</div>
+    <div class="pill ko">Fail</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Without deny rules, one bad agent call can leak secrets, corrupt git, or wipe local work.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>Committed deny rules for destructive bash and sensitive files.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>.claude/settings.json</code> committed but <code>permissions.deny</code> has only 2 generic patterns</li>
+      <li>No deny for <code>git push --force*</code>, <code>git reset --hard</code>, <code>rm -rf</code></li>
+      <li><code>.env</code> and <code>.pem</code> reads not denied</li>
+    </ul></div>
+    <div class="block fix"><h4>What to do to make clanker happy</h4><ul>
+      <li>Add: <code>Bash(git push --force*)</code>, <code>Bash(git reset --hard*)</code>, <code>Bash(rm -rf*)</code></li>
+      <li>Add: <code>Read(.env*)</code> except <code>.env.example</code>, <code>Read(**/*.pem)</code>, <code>Read(**/secrets/**)</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">14<small>Pattern</small></div>
+    <div class="pname">Local Config Hygiene<span>Keep personal config out of git</span></div>
+    <div class="w">w. 3</div>
+    <div class="pill ok">Pass</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Ungitignored local config and .env files leak into history.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>.gitignore excludes local Claude files, .env variants, .pem.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>.gitignore</code> covers all expected patterns at lines 24–31</li>
+      <li>No tracked files match</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="section">
+  <h2><em>IV.</em> Reusable Agent Workflows</h2>
+  <div class="sec-tag">Patterns 15 — 17</div>
+</div>
+
+<details>
+  <summary>
+    <div class="num">15<small>Pattern</small></div>
+    <div class="pname">Just-in-Time Skill<span>Load on demand</span></div>
+    <div class="w">w. 3</div>
+    <div class="pill note">Pass · with note</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Stuffing every workflow into CLAUDE.md wastes context. Skills load on demand.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p><code>.claude/skills/</code> with narrow, well-described skills.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li>Two skills: <code>release/</code> and <code>db-migration/</code></li>
+      <li>Legacy <code>.claude/commands/security-review.md</code> still around</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">16<small>Pattern</small></div>
+    <div class="pname">Agent Output / PR Hygiene<span>What lands in the PR</span></div>
+    <div class="w">w. 3</div>
+    <div class="pill note">Pass · with note</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Without expectations, agents improvise summaries that omit tests, risks, rollback.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>PR template + CLAUDE.md PR section.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>PULL_REQUEST_TEMPLATE.md</code> covers summary + tests, no rollback</li>
+      <li>Attribution policy not stated</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <div class="num">17<small>Pattern</small></div>
+    <div class="pname">Custom Subagents<span>Specialists for risky work</span></div>
+    <div class="w">w. 4</div>
+    <div class="pill ok">Pass</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Recurring high-risk reviews benefit from focused subagents.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p><code>.claude/agents/</code> matched to the repo's actual risk surface.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li>Three subagents: <code>payment-flow-reviewer</code>, <code>db-migration-reviewer</code>, <code>webhook-replay-tester</code></li>
+      <li>All read-only, with tool allowlists</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="section">
+  <h2><em>V.</em> Team Rollout &amp; Continuous Improvement</h2>
+  <div class="sec-tag">Pattern 18</div>
+</div>
+
+<details>
+  <summary>
+    <div class="num">18<small>Pattern</small></div>
+    <div class="pname">Harness Bundle<span>Share the setup</span></div>
+    <div class="w">w. 4</div>
+    <div class="pill note">Pass · with note</div>
+  </summary>
+  <div class="body">
+    <div class="block why"><h4>Why does it matter</h4><p>Config locked to one repo doesn't propagate. A plugin lets the team apply it everywhere.</p></div>
+    <div class="block good"><h4>What good looks like</h4><p>Plugin or shared marketplace bundle.</p></div>
+    <div class="block current"><h4>What's currently in your repo</h4><ul>
+      <li><code>.claude/</code> references <code>@acme/clanker-harness@1.4.0</code> via <code>enabledPlugins</code></li>
+      <li>Only 4 of 11 team repos consume it so far</li>
+    </ul></div>
+  </div>
+</details>
+
+<script>
+(function () {
+  var btn = document.getElementById('copy-prompt-btn');
+  var src = document.getElementById('clanker-prompt');
+  if (!btn || !src) return;
+  var orig = btn.textContent;
+  btn.addEventListener('click', function () {
+    var done = function () {
+      btn.textContent = 'Copied to clipboard';
+      btn.classList.add('copied');
+      setTimeout(function () { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(src.value).then(done, function () {
+        src.style.left = '0'; src.select(); document.execCommand('copy'); src.style.left = '-9999px'; done();
+      });
+    } else {
+      src.style.left = '0'; src.select(); document.execCommand('copy'); src.style.left = '-9999px'; done();
+    }
+  });
+})();
+</script>
+</body>
+</html>

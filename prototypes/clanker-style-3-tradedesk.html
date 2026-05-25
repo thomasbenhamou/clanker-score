@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CLKR · MY-REPO · 61.0</title>
+<style>
+  :root{
+    --bg:#0a0d12;
+    --panel:#10151c;
+    --panel-2:#161c25;
+    --grid:#1f2733;
+    --rule:#222a36;
+    --text:#dde3ec;
+    --dim:#7a8493;
+    --label:#5d6675;
+    --bull:#16d195;
+    --bull-soft:rgba(22,209,149,0.12);
+    --bear:#ff4d5e;
+    --bear-soft:rgba(255,77,94,0.12);
+    --warn:#ffb020;
+    --warn-soft:rgba(255,176,32,0.14);
+    --cyan:#56c6ff;
+    --cyan-soft:rgba(86,198,255,0.14);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text)}
+  body{
+    font-family:"Inter","SF Pro Text",-apple-system,system-ui,sans-serif;
+    font-size:13.5px;line-height:1.5;
+    max-width:1240px;margin:0 auto;padding:24px 24px 80px;
+    font-feature-settings:"tnum","cv11";
+    background:
+      radial-gradient(1200px 600px at -10% -20%, rgba(86,198,255,0.04), transparent 60%),
+      radial-gradient(900px 500px at 110% 0%, rgba(22,209,149,0.03), transparent 60%),
+      var(--bg);
+  }
+  .mono{font-family:"JetBrains Mono","SF Mono","Menlo",monospace;font-feature-settings:"tnum"}
+
+  /* TOP BAR */
+  .topbar{
+    display:flex;align-items:center;gap:14px;
+    border:1px solid var(--grid);background:var(--panel);
+    padding:8px 14px;margin-bottom:14px;
+    font-family:"JetBrains Mono","SF Mono",monospace;font-size:12px;
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--bull);box-shadow:0 0 0 3px rgba(22,209,149,0.15)}
+  .topbar .pair{color:var(--text);font-weight:600;letter-spacing:0.03em}
+  .topbar .sep{color:var(--label)}
+  .topbar .label{color:var(--label);text-transform:uppercase;letter-spacing:0.12em;font-size:10.5px}
+  .topbar .v{color:var(--text)}
+  .topbar .v.bull{color:var(--bull)}
+  .topbar .v.bear{color:var(--bear)}
+  .topbar .v.warn{color:var(--warn)}
+  .topbar .spacer{flex:1}
+  .topbar .ts{color:var(--dim);font-size:11px;letter-spacing:0.05em}
+
+  /* MAIN GRID */
+  .layout{display:grid;grid-template-columns:1.05fr 1.55fr;gap:14px;margin-bottom:14px}
+
+  /* TICKER (score panel) */
+  .ticker{
+    border:1px solid var(--grid);background:var(--panel);
+    padding:18px 20px;position:relative;
+  }
+  .ticker .label{
+    font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:0.16em;
+    color:var(--label);text-transform:uppercase;margin-bottom:6px;
+  }
+  .ticker .sym{display:flex;align-items:baseline;gap:14px}
+  .ticker .sym .symbol{font-family:"JetBrains Mono",monospace;font-size:14px;font-weight:600;color:var(--text);letter-spacing:0.05em}
+  .ticker .sym .name{color:var(--dim);font-size:12px}
+  .ticker .big{
+    display:flex;align-items:flex-end;gap:18px;margin-top:6px;
+  }
+  .ticker .price{
+    font-family:"JetBrains Mono",monospace;font-weight:700;font-size:84px;line-height:1;
+    color:var(--warn);letter-spacing:-0.025em;
+  }
+  .ticker .price .of{color:var(--dim);font-size:18px;font-weight:500;margin-left:6px;letter-spacing:0}
+  .ticker .delta{
+    font-family:"JetBrains Mono",monospace;font-weight:600;font-size:14px;
+    padding-bottom:8px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+  }
+  .ticker .delta .vs{color:var(--bear)}
+  .ticker .delta .vs::before{content:"▼ ";font-size:11px}
+  .ticker .delta .sub{color:var(--dim);font-size:11px;letter-spacing:0.05em}
+
+  .ticker-stats{
+    margin-top:18px;border-top:1px solid var(--rule);padding-top:14px;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
+  }
+  .stat{font-family:"JetBrains Mono",monospace}
+  .stat .k{color:var(--label);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:2px}
+  .stat .v{font-size:18px;font-weight:700;letter-spacing:-0.01em}
+  .stat .v.bull{color:var(--bull)}
+  .stat .v.bear{color:var(--bear)}
+  .stat .v.warn{color:var(--warn)}
+
+  /* HEATMAP */
+  .heat{
+    border:1px solid var(--grid);background:var(--panel);
+    padding:18px 20px;
+  }
+  .heat .label{
+    font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:0.16em;
+    color:var(--label);text-transform:uppercase;margin-bottom:14px;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .heat .legend{display:flex;gap:14px;font-size:10px;letter-spacing:0.08em}
+  .heat .legend span{display:inline-flex;align-items:center;gap:6px}
+  .heat .legend i{display:inline-block;width:9px;height:9px;border-radius:1px}
+  .heat .legend i.b{background:var(--bull)}
+  .heat .legend i.w{background:var(--warn)}
+  .heat .legend i.r{background:var(--bear)}
+  .heat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+  .cell{
+    aspect-ratio:1.4 / 1;border:1px solid var(--grid);padding:8px 9px;
+    display:flex;flex-direction:column;justify-content:space-between;
+    font-family:"JetBrains Mono",monospace;cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease;
+    position:relative;overflow:hidden;
+  }
+  .cell:hover{transform:translateY(-1px);border-color:var(--cyan)}
+  .cell .id{font-size:11px;color:var(--dim);letter-spacing:0.04em}
+  .cell .nm{font-size:10.5px;color:var(--text);font-family:"Inter",sans-serif;line-height:1.25;font-weight:500}
+  .cell .pt{font-size:14px;font-weight:700;letter-spacing:-0.01em}
+  .cell.ok{background:var(--bull-soft);border-color:rgba(22,209,149,0.4)}
+  .cell.ok .pt{color:var(--bull)}
+  .cell.note{background:var(--warn-soft);border-color:rgba(255,176,32,0.4)}
+  .cell.note .pt{color:var(--warn)}
+  .cell.ko{background:var(--bear-soft);border-color:rgba(255,77,94,0.4)}
+  .cell.ko .pt{color:var(--bear)}
+
+  /* CTA */
+  .cta{
+    margin:6px 0 22px;
+    border:1px solid var(--cyan);background:linear-gradient(90deg, rgba(86,198,255,0.08), rgba(86,198,255,0.02));
+    padding:16px 20px;display:flex;align-items:center;gap:18px;
+  }
+  .cta .icon{
+    font-family:"JetBrains Mono",monospace;color:var(--cyan);font-size:13px;
+    border:1px solid var(--cyan);padding:6px 10px;letter-spacing:0.06em;
+  }
+  .cta-body{flex:1;min-width:0}
+  .cta-body h3{margin:0;font-size:14px;font-weight:700;letter-spacing:-0.005em}
+  .cta-body p{margin:3px 0 0;color:var(--dim);font-size:12.5px}
+  .cta button{
+    background:var(--cyan);color:#031722;border:0;font-family:"JetBrains Mono",monospace;
+    font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+    padding:10px 18px;cursor:pointer;
+  }
+  .cta button:hover{filter:brightness(1.08)}
+  .cta button.copied{background:var(--bull);color:#04211a}
+  #clanker-prompt{position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0}
+
+  /* SECTION HEADINGS */
+  .section{
+    margin:30px 0 8px;display:flex;align-items:center;gap:12px;
+    font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.16em;
+    color:var(--label);text-transform:uppercase;
+  }
+  .section .bar{flex:1;height:1px;background:var(--rule)}
+  .section .ct{color:var(--dim)}
+
+  /* ROWS */
+  .table{border:1px solid var(--grid);background:var(--panel);}
+  details{border-top:1px solid var(--rule)}
+  details:first-of-type{border-top:0}
+  details[open]{background:var(--panel-2)}
+  summary{
+    list-style:none;cursor:pointer;
+    display:grid;grid-template-columns:36px 56px 1fr 80px 80px 90px;
+    gap:12px;align-items:center;padding:11px 16px;
+    font-size:13px;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary .caret{color:var(--dim);font-family:"JetBrains Mono",monospace;font-size:11px;transition:transform .12s}
+  details[open] > summary .caret{transform:rotate(90deg);color:var(--cyan)}
+  summary:hover{background:rgba(86,198,255,0.04)}
+  .pid{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--label);letter-spacing:0.04em}
+  .pname{font-weight:500;letter-spacing:-0.005em}
+  .pname small{display:block;color:var(--dim);font-size:11px;font-weight:400;margin-top:1px;letter-spacing:0.02em}
+  .num-cell{font-family:"JetBrains Mono",monospace;font-size:12.5px;text-align:right;color:var(--text)}
+  .num-cell.muted{color:var(--dim)}
+  .verdict{
+    font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;
+    text-align:center;padding:3px 0;letter-spacing:0.12em;
+    border:1px solid;
+  }
+  .verdict.ok{color:var(--bull);border-color:rgba(22,209,149,0.4);background:var(--bull-soft)}
+  .verdict.ko{color:var(--bear);border-color:rgba(255,77,94,0.4);background:var(--bear-soft)}
+  .verdict.note{color:var(--warn);border-color:rgba(255,176,32,0.4);background:var(--warn-soft)}
+
+  .row-body{
+    padding:6px 16px 22px;border-top:1px dashed var(--rule);
+    display:grid;grid-template-columns:repeat(2,1fr);gap:14px 22px;
+  }
+  .field{
+    border-left:2px solid var(--rule);padding:6px 0 6px 14px;
+  }
+  .field .kicker{
+    font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:0.14em;
+    color:var(--label);text-transform:uppercase;margin-bottom:5px;
+  }
+  .field p, .field ul{margin:0;font-size:13px;line-height:1.55;color:var(--text)}
+  .field ul{padding-left:18px}
+  .field ul li{margin:2px 0}
+  .field ul li::marker{color:var(--dim);content:"› "}
+  .field.why{border-left-color:var(--cyan)}
+  .field.why .kicker{color:var(--cyan)}
+  .field.good{border-left-color:var(--bull)}
+  .field.good .kicker{color:var(--bull)}
+  .field.obs{border-left-color:var(--label)}
+  .field.fix{border-left-color:var(--warn);grid-column:1 / -1}
+  .field.fix .kicker{color:var(--warn)}
+  .field code{font-family:"JetBrains Mono",monospace;background:rgba(255,255,255,0.05);padding:1px 5px;font-size:12px;border-radius:2px}
+
+  footer{
+    margin-top:36px;border-top:1px solid var(--grid);padding-top:12px;
+    font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--dim);
+    display:flex;justify-content:space-between;letter-spacing:0.06em;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar mono">
+  <span class="dot"></span>
+  <span class="pair">CLKR / MY-REPO</span>
+  <span class="sep">·</span>
+  <span class="label">SCORE</span><span class="v warn">61.0</span>
+  <span class="sep">·</span>
+  <span class="label">BAND</span><span class="v warn">AMBER</span>
+  <span class="sep">·</span>
+  <span class="label">OK</span><span class="v bull">9</span>
+  <span class="label">NOTE</span><span class="v warn">4</span>
+  <span class="label">KO</span><span class="v bear">5</span>
+  <span class="spacer"></span>
+  <span class="ts">2026-05-25 14:32:07 UTC · run 4c8a</span>
+</div>
+
+<div class="layout">
+  <section class="ticker">
+    <div class="label">CLANKER SCORE / WEIGHTED</div>
+    <div class="sym">
+      <span class="symbol">CLKR.MR</span>
+      <span class="name">my-repo · 18 patterns</span>
+    </div>
+    <div class="big">
+      <div class="price">61<span class="of">/100</span></div>
+      <div class="delta">
+        <span class="vs">−19.0 vs target 80</span>
+        <span class="sub">last close 22 (prev run · +39.0)</span>
+      </div>
+    </div>
+    <div class="ticker-stats">
+      <div class="stat"><div class="k">PASS WT</div><div class="v bull">56.1</div></div>
+      <div class="stat"><div class="k">NOTE WT</div><div class="v warn">12.5</div></div>
+      <div class="stat"><div class="k">FAIL WT</div><div class="v bear">31.0</div></div>
+    </div>
+  </section>
+
+  <section class="heat">
+    <div class="label">PATTERN HEATMAP <div class="legend"><span><i class="b"></i>OK</span><span><i class="w"></i>NOTE</span><span><i class="r"></i>KO</span></div></div>
+    <div class="heat-grid">
+      <div class="cell note" title="Reproducible Development Environment"><span class="id">01</span><span class="nm">Reproducible Dev Env</span><span class="pt">w6</span></div>
+      <div class="cell ok" title="Package Manager &amp; Runtime Pinning"><span class="id">02</span><span class="nm">PM &amp; Runtime Pin</span><span class="pt">w4</span></div>
+      <div class="cell ko" title="Repo Map"><span class="id">03</span><span class="nm">Repo Map</span><span class="pt">w5</span></div>
+      <div class="cell ok" title="Context Cascade"><span class="id">04</span><span class="nm">Context Cascade</span><span class="pt">w4</span></div>
+      <div class="cell note" title="CLAUDE.md Quality"><span class="id">05</span><span class="nm">CLAUDE.md Quality</span><span class="pt">w10</span></div>
+      <div class="cell ko" title="Noise Filter"><span class="id">06</span><span class="nm">Noise Filter</span><span class="pt">w6</span></div>
+      <div class="cell ok" title="Symbol Lookup"><span class="id">07</span><span class="nm">Symbol Lookup</span><span class="pt">w8</span></div>
+      <div class="cell note" title="Large-Repo File Discovery"><span class="id">08</span><span class="nm">File Discovery</span><span class="pt">w5</span></div>
+      <div class="cell ko" title="Deterministic Checks"><span class="id">09</span><span class="nm">Deterministic Chks</span><span class="pt">w10</span></div>
+      <div class="cell ok" title="Verifiable Work Loop"><span class="id">10</span><span class="nm">Verifiable Loop</span><span class="pt">w9</span></div>
+      <div class="cell note" title="CI Parity"><span class="id">11</span><span class="nm">CI Parity</span><span class="pt">w4</span></div>
+      <div class="cell ok" title="Fast Feedback / Focused Tests"><span class="id">12</span><span class="nm">Fast Feedback</span><span class="pt">w6</span></div>
+      <div class="cell ko" title="Permission Hardening"><span class="id">13</span><span class="nm">Permission Hard.</span><span class="pt">w6</span></div>
+      <div class="cell ok" title="Local Config Hygiene"><span class="id">14</span><span class="nm">Config Hygiene</span><span class="pt">w3</span></div>
+      <div class="cell ok" title="Just-in-Time Skill"><span class="id">15</span><span class="nm">JIT Skill</span><span class="pt">w3</span></div>
+      <div class="cell note" title="Agent Output / PR Hygiene"><span class="id">16</span><span class="nm">PR Hygiene</span><span class="pt">w3</span></div>
+      <div class="cell ko" title="Custom Subagents"><span class="id">17</span><span class="nm">Custom Subagents</span><span class="pt">w4</span></div>
+      <div class="cell ok" title="Harness Bundle"><span class="id">18</span><span class="nm">Harness Bundle</span><span class="pt">w4</span></div>
+    </div>
+  </section>
+</div>
+
+<section class="cta">
+  <span class="icon">↳ ACTION</span>
+  <div class="cta-body">
+    <h3>Ask your clanker to clean this up</h3>
+    <p>One subagent per failing section, dispatched in parallel. Paste into a fresh Claude Code session.</p>
+  </div>
+  <button type="button" id="copy-prompt-btn">Copy prompt</button>
+</section>
+<textarea id="clanker-prompt" readonly aria-hidden="true" tabindex="-1">You are a coding agent tasked with improving this repository's coding-agent efficiency setup, based on a /clanker-score audit (score: 61/100, generated 2026-05-25 14:32 UTC).
+
+Dispatch ONE subagent per section IN PARALLEL using the Task tool with subagent_type "general-purpose".
+
+## Section 1 — Agent Efficiency Foundations
+### Pattern 3 — Repo Map
+- Create REPO_MAP.md with one-line purpose for each top-level folder.
+
+## Section 2 — Context &amp; Tooling
+### Pattern 6 — Noise Filter
+- Add .claude/settings.json with permissions.deny for node_modules/, dist/, .next/.
+
+## Section 3 — Verification &amp; Safety
+### Pattern 9 — Deterministic Checks
+- Wire PostToolUse hook to `pnpm lint --filter ...` on Edit/Write.
+### Pattern 13 — Permission Hardening
+- Add deny entries for destructive bash and sensitive file reads.
+
+## Section 4 — Reusable Agent Workflows
+### Pattern 17 — Custom Subagents
+- Create .claude/agents/security-reviewer.md and migration-reviewer.md.</textarea>
+<script>
+(function(){
+  var btn=document.getElementById('copy-prompt-btn');
+  var src=document.getElementById('clanker-prompt');
+  if(!btn||!src)return;
+  var original=btn.textContent;
+  function flash(){btn.textContent='Copied ✓';btn.classList.add('copied');setTimeout(function(){btn.textContent=original;btn.classList.remove('copied')},1800)}
+  btn.addEventListener('click',function(){
+    var t=src.value;
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(flash,function(){src.select();document.execCommand('copy');flash()});
+    } else { src.select(); document.execCommand('copy'); flash(); }
+  });
+})();
+</script>
+
+<div class="section"><span>§01 · Agent Efficiency Foundations</span><span class="bar"></span><span class="ct">5 patterns · w29</span></div>
+<div class="table">
+
+<details>
+  <summary>
+    <span class="pid">01</span>
+    <span class="caret">▸</span>
+    <span class="pname">Reproducible Development Environment <small>setup is documented enough for a fresh clone</small></span>
+    <span class="num-cell muted">w 6</span>
+    <span class="num-cell">4.2 pts</span>
+    <span class="verdict note">NOTE</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>Without a clean-checkout install path, agents waste cycles guessing at undocumented local setup and hit "works on my machine" failures.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>A fresh clone can be installed, run, tested, and built using documented commands tied to real files — devcontainer, Dockerfile, Makefile, justfile.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li>README has setup steps but no Makefile or devcontainer.</li><li>package.json scripts present but undocumented in CLAUDE.md.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Add a <code>justfile</code> with <code>install</code> / <code>dev</code> / <code>test</code> / <code>build</code> targets.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">02</span>
+    <span class="caret">▸</span>
+    <span class="pname">Package Manager &amp; Runtime Pinning <small>one PM per ecosystem; runtime pinned</small></span>
+    <span class="num-cell muted">w 4</span>
+    <span class="num-cell">4.0 pts</span>
+    <span class="verdict ok">OK</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>When the package manager or runtime version is ambiguous, agents may run npm in a pnpm project or generate a second lockfile that conflicts with CI.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>One package manager per ecosystem; runtime pinned via <code>.nvmrc</code> / <code>.tool-versions</code> / <code>pyproject.toml</code>.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li><code>pnpm-lock.yaml</code> present; <code>packageManager: pnpm@9.7.0</code>.</li><li><code>.nvmrc</code> pins <code>node 22.6.0</code>.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">03</span>
+    <span class="caret">▸</span>
+    <span class="pname">Repo Map <small>one-line purpose for each top-level folder</small></span>
+    <span class="num-cell muted">w 5</span>
+    <span class="num-cell">0.0 pts</span>
+    <span class="verdict ko">KO</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>Without a top-level map, agents waste tokens grepping the whole tree to figure out where features live, especially in monorepos.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>A <code>REPO_MAP.md</code> lists every top-level folder with a one-line purpose.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li>No <code>REPO_MAP.md</code> found.</li><li>README lists 47 packages — none with descriptions.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Create <code>REPO_MAP.md</code> with one-line purpose for each top-level folder.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">04</span>
+    <span class="caret">▸</span>
+    <span class="pname">Context Cascade <small>root CLAUDE.md focused; subtree files local</small></span>
+    <span class="num-cell muted">w 4</span>
+    <span class="num-cell">4.0 pts</span>
+    <span class="verdict ok">OK</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>A single bloated CLAUDE.md forces agents to load thousands of lines of mostly-irrelevant guidance on every task.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>Root CLAUDE.md under ~200 lines; subtree CLAUDE.md files carry local commands and gotchas.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li>Root CLAUDE.md is 142 lines.</li><li>3 subtree files in <code>packages/api</code>, <code>packages/web</code>, <code>packages/cli</code>.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">05</span>
+    <span class="caret">▸</span>
+    <span class="pname">CLAUDE.md Quality <small>concise, repo-specific, aligned with scripts</small></span>
+    <span class="num-cell muted">w 10</span>
+    <span class="num-cell">7.0 pts</span>
+    <span class="verdict note">NOTE</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>A CLAUDE.md full of generic platitudes or stale instructions costs context without adding value.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>Concise, repo-specific, aligned with actual scripts and CI; captures the non-obvious.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li>22 lines of generic "write clean code" advice.</li><li>Verification commands present and match <code>package.json</code> scripts.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Remove generic style advice; keep only repo-specific gotchas.</li></ul></div>
+  </div>
+</details>
+
+</div>
+
+<div class="section"><span>§02 · Context &amp; Tooling</span><span class="bar"></span><span class="ct">3 patterns · w19</span></div>
+<div class="table">
+
+<details>
+  <summary>
+    <span class="pid">06</span>
+    <span class="caret">▸</span>
+    <span class="pname">Noise Filter <small>committed deny rules for generated paths</small></span>
+    <span class="num-cell muted">w 6</span>
+    <span class="num-cell">0.0 pts</span>
+    <span class="verdict ko">KO</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>When <code>node_modules</code>, <code>dist</code>, <code>vendor</code>, <code>coverage</code>, and generated SDK folders are searchable, every grep returns hundreds of irrelevant hits.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>A committed <code>.claude/settings.json</code> uses <code>permissions.deny</code> for noisy paths that actually exist.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li>No <code>.claude/settings.json</code> found.</li><li><code>node_modules</code> and <code>dist</code> are searchable.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Add <code>.claude/settings.json</code> with <code>permissions.deny</code> for <code>node_modules/</code>, <code>dist/</code>, <code>.next/</code>.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">07</span>
+    <span class="caret">▸</span>
+    <span class="pname">Symbol Lookup <small>LSP-backed MCP server for dominant languages</small></span>
+    <span class="num-cell muted">w 8</span>
+    <span class="num-cell">8.0 pts</span>
+    <span class="verdict ok">OK</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>Without LSP-backed code intelligence, agents fall back to grep for definitions and references — slow, noisy, easily fooled by name collisions.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>An MCP server with LSP support (e.g. <code>serena</code>) configured for the dominant languages.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li><code>.mcp.json</code> declares serena for TypeScript and Python.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">08</span>
+    <span class="caret">▸</span>
+    <span class="pname">Large-Repo File Discovery <small>workspace manifest or repo map present</small></span>
+    <span class="num-cell muted">w 5</span>
+    <span class="num-cell">3.5 pts</span>
+    <span class="verdict note">NOTE</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>In a monorepo with thousands of files, blind grep and find exhaust context before the agent finds the right file.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>At least one of: <code>REPO_MAP.md</code>, a workspace manifest, a fileSuggestion config, or a documented "how to find files" section.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li><code>pnpm-workspace.yaml</code> present.</li><li>No <code>REPO_MAP.md</code>; tree is &lt; 300 files.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Add a short "where to find things" section in CLAUDE.md.</li></ul></div>
+  </div>
+</details>
+
+</div>
+
+<div class="section"><span>§03 · Verification &amp; Safety</span><span class="bar"></span><span class="ct">6 patterns · w38</span></div>
+<div class="table">
+
+<details>
+  <summary>
+    <span class="pid">09</span>
+    <span class="caret">▸</span>
+    <span class="pname">Deterministic Checks <small>PostToolUse hooks wired to real commands</small></span>
+    <span class="num-cell muted">w 10</span>
+    <span class="num-cell">0.0 pts</span>
+    <span class="verdict ko">KO</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>When quality enforcement is "remember to run the linter" in prose, agents and humans forget. Hooks make checks unavoidable.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p><code>.claude/settings.json</code> wires <code>PostToolUse</code> hooks on Edit/Write/MultiEdit to real project commands.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li>No hooks declared in <code>.claude/settings.json</code>.</li><li>lint and typecheck scripts exist but are not wired to PostToolUse.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Wire <code>PostToolUse</code> hook to <code>pnpm lint --filter</code> on Edit/Write.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">10</span>
+    <span class="caret">▸</span>
+    <span class="pname">Verifiable Work Loop <small>explicit verification commands documented</small></span>
+    <span class="num-cell muted">w 9</span>
+    <span class="num-cell">9.0 pts</span>
+    <span class="verdict ok">OK</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>An agent that cannot verify its own work has to hand back to a human just to know whether the change compiles.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>CLAUDE.md has an explicit "Verification" section listing install/lint/typecheck/test/build commands.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li>CLAUDE.md has explicit Verification section with install/lint/typecheck/test/build commands.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">11</span>
+    <span class="caret">▸</span>
+    <span class="pname">CI Parity <small>local commands mirror CI checks</small></span>
+    <span class="num-cell muted">w 4</span>
+    <span class="num-cell">2.8 pts</span>
+    <span class="verdict note">NOTE</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>When local agent checks are weaker than CI, work passes locally and fails in the pipeline, forcing rework.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>Every meaningful CI check has a documented local equivalent, ideally one <code>make verify</code> command.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li>CI runs <code>pnpm verify</code> which is documented locally.</li><li>ESLint config differs slightly between local and CI.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Align local ESLint with <code>.github/workflows/ci.yml</code>.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">12</span>
+    <span class="caret">▸</span>
+    <span class="pname">Fast Feedback / Focused Tests <small>single-file and watch-mode commands</small></span>
+    <span class="num-cell muted">w 6</span>
+    <span class="num-cell">6.0 pts</span>
+    <span class="verdict ok">OK</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>If the only documented way to test is "run the full suite", agents either wait minutes per iteration or skip testing.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>CLAUDE.md documents how to run a single test file, a package/module scope, and the full suite.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li>Single-file test documented: <code>pnpm test -- path/file</code>.</li><li>Watch mode documented.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">13</span>
+    <span class="caret">▸</span>
+    <span class="pname">Permission Hardening <small>deny destructive bash &amp; sensitive files</small></span>
+    <span class="num-cell muted">w 6</span>
+    <span class="num-cell">0.0 pts</span>
+    <span class="verdict ko">KO</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>Without committed deny rules, a coding agent can force-push, hard-reset, <code>rm -rf</code>, or edit <code>.env</code> and key files.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>A committed <code>.claude/settings.json</code> has a <code>permissions.deny</code> block covering destructive bash and sensitive files.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li><code>.claude/settings.json</code> has no deny block.</li><li><code>rm -rf</code> and <code>git push --force</code> are not blocked.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Add deny entries for destructive bash and sensitive file reads.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">14</span>
+    <span class="caret">▸</span>
+    <span class="pname">Local Config Hygiene <small>local files &amp; secrets gitignored</small></span>
+    <span class="num-cell muted">w 3</span>
+    <span class="num-cell">3.0 pts</span>
+    <span class="verdict ok">OK</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>When local Claude files, <code>.env</code> files, or private keys are not gitignored, personal config and secrets can be committed.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p><code>.gitignore</code> excludes Claude-local files, <code>.env</code> variants, and key patterns.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li><code>.gitignore</code> covers <code>CLAUDE.local.md</code>, <code>settings.local.json</code>, <code>.env*</code>.</li><li>No local files tracked.</li></ul></div>
+  </div>
+</details>
+
+</div>
+
+<div class="section"><span>§04 · Reusable Agent Workflows</span><span class="bar"></span><span class="ct">3 patterns · w10</span></div>
+<div class="table">
+
+<details>
+  <summary>
+    <span class="pid">15</span>
+    <span class="caret">▸</span>
+    <span class="pname">Just-in-Time Skill <small>narrow skills with clear when-to-use</small></span>
+    <span class="num-cell muted">w 3</span>
+    <span class="num-cell">3.0 pts</span>
+    <span class="verdict ok">OK</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>Stuffing every workflow into CLAUDE.md means agents load it all every session, wasting context.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p><code>.claude/skills/</code> contains narrow skills with clear "when to use" descriptions.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li><code>.claude/skills/release/</code> and <code>.claude/skills/migration/</code> present with clear descriptions.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">16</span>
+    <span class="caret">▸</span>
+    <span class="pname">Agent Output / PR Hygiene <small>PR template with risks/rollback</small></span>
+    <span class="num-cell muted">w 3</span>
+    <span class="num-cell">2.1 pts</span>
+    <span class="verdict note">NOTE</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>Without explicit PR expectations, agents improvise summaries that omit tests run, risks, rollback notes, or screenshots.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>A PR template tells agents to include summary, verification commands, risks, rollback notes, and UI screenshots.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li><code>.github/PULL_REQUEST_TEMPLATE.md</code> present but no risk/rollback section.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Add Risks and Rollback sections to the PR template.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="pid">17</span>
+    <span class="caret">▸</span>
+    <span class="pname">Custom Subagents <small>project-specific reviewers for risk surface</small></span>
+    <span class="num-cell muted">w 4</span>
+    <span class="num-cell">0.0 pts</span>
+    <span class="verdict ko">KO</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>Generic subagents handle generic work, but recurring high-risk reviews (security, migrations) benefit from a focused agent.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p><code>.claude/agents/</code> contains project-specific subagents matched to the repo's actual risk surface.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li>No <code>.claude/agents/</code> folder.</li><li>Repo handles auth and migrations but uses generic agents.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Create <code>.claude/agents/security-reviewer.md</code> and <code>migration-reviewer.md</code>.</li></ul></div>
+  </div>
+</details>
+
+</div>
+
+<div class="section"><span>§05 · Team Rollout &amp; Continuous Improvement</span><span class="bar"></span><span class="ct">1 pattern · w4</span></div>
+<div class="table">
+
+<details>
+  <summary>
+    <span class="pid">18</span>
+    <span class="caret">▸</span>
+    <span class="pname">Harness Bundle <small>packaged plugin or shared marketplace</small></span>
+    <span class="num-cell muted">w 4</span>
+    <span class="num-cell">4.0 pts</span>
+    <span class="verdict ok">OK</span>
+  </summary>
+  <div class="row-body">
+    <div class="field why"><div class="kicker">Why</div><p>When skills, hooks, MCP config, and agents live only in one repo's <code>.claude/</code> folder, every other repo has to reinvent them.</p></div>
+    <div class="field good"><div class="kicker">Target</div><p>The harness is packaged as a plugin or pulled from a shared internal marketplace.</p></div>
+    <div class="field obs"><div class="kicker">Observed</div><ul><li><code>.claude-plugin/plugin.json</code> present; referenced via <code>enabledPlugins</code> in 4 other repos.</li></ul></div>
+  </div>
+</details>
+
+</div>
+
+<footer>
+  <div>CLKR · MY-REPO · 18 PATTERNS · WEIGHTED</div>
+  <div>RUN 4c8a · 2026-05-25 14:32:07 UTC</div>
+</footer>
+
+</body>
+</html>

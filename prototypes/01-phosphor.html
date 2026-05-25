@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CLANKER-SCORE :: acme-payments-api</title>
+<style>
+  :root {
+    --bg: #06080a;
+    --bg-inner: #0a0d10;
+    --phosphor: #b4ffb4;
+    --phosphor-dim: #6fbf6f;
+    --phosphor-deep: #2d5a2d;
+    --amber: #ffc24a;
+    --amber-dim: #b07a1a;
+    --red: #ff6b6b;
+    --red-dim: #8a2222;
+    --muted: #4a6b4a;
+  }
+  @font-face {
+    font-family: 'mono';
+    src: local('JetBrains Mono'), local('IBM Plex Mono'), local('Menlo'), local('Consolas');
+  }
+  * { box-sizing: border-box; }
+  html, body { background: #000; }
+  body {
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', 'Menlo', 'Consolas', monospace;
+    background:
+      radial-gradient(ellipse at center, #0d1410 0%, #050807 100%);
+    color: var(--phosphor);
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 5rem;
+    font-size: 14px;
+    line-height: 1.5;
+    text-shadow: 0 0 1px currentColor, 0 0 6px rgba(180,255,180,0.18);
+    position: relative;
+    min-height: 100vh;
+  }
+  /* CRT scanlines */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.18) 3px,
+      rgba(0,0,0,0.18) 3px
+    );
+    z-index: 2;
+  }
+  /* vignette */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.6) 100%);
+    z-index: 1;
+  }
+  .wrap { position: relative; z-index: 3; }
+  pre, .ascii {
+    margin: 0;
+    font-family: inherit;
+    white-space: pre;
+    line-height: 1.2;
+  }
+  a { color: var(--amber); text-decoration: none; }
+  h1, h2, h3, h4 { font-weight: normal; margin: 0; }
+
+  /* header */
+  .head {
+    border: 1px solid var(--phosphor-deep);
+    padding: 0.85rem 1rem 0.65rem;
+    margin-bottom: 1.25rem;
+    background: rgba(20, 35, 20, 0.18);
+  }
+  .head .row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 1rem; flex-wrap: wrap;
+  }
+  .head .blink::after {
+    content: "_";
+    animation: blink 1s steps(2, end) infinite;
+    color: var(--phosphor);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .head h1 {
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    color: var(--phosphor);
+  }
+  .head .meta {
+    color: var(--phosphor-dim);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+  }
+  .head .meta span { color: var(--amber); }
+
+  /* score box */
+  .score-box {
+    border: 1px solid var(--amber-dim);
+    padding: 1rem 1.25rem;
+    margin: 0 0 1.25rem;
+    background: rgba(40, 28, 6, 0.25);
+  }
+  .score-box .ascii {
+    color: var(--amber);
+    text-shadow: 0 0 2px var(--amber), 0 0 12px rgba(255,194,74,0.4);
+    font-size: 12.5px;
+  }
+  .score-box .footline {
+    color: var(--amber-dim);
+    font-size: 0.78rem;
+    margin-top: 0.55rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* cta */
+  .cta {
+    border: 1px solid var(--phosphor-dim);
+    padding: 0.9rem 1rem;
+    margin: 0 0 1.5rem;
+    background: rgba(50, 80, 50, 0.18);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .cta-text { flex: 1; min-width: 260px; }
+  .cta-text .prompt {
+    color: var(--phosphor);
+    font-size: 0.92rem;
+  }
+  .cta-text .prompt::before {
+    content: "$ ";
+    color: var(--phosphor-dim);
+  }
+  .cta-text .sub {
+    color: var(--phosphor-dim);
+    font-size: 0.76rem;
+    margin-top: 0.2rem;
+    letter-spacing: 0.03em;
+  }
+  .cta-button {
+    border: 1px solid var(--phosphor);
+    background: transparent;
+    color: var(--phosphor);
+    font-family: inherit;
+    font-size: 0.82rem;
+    padding: 0.5rem 0.95rem;
+    cursor: pointer;
+    text-shadow: inherit;
+    letter-spacing: 0.05em;
+    transition: background 0.1s ease;
+  }
+  .cta-button:hover { background: rgba(180, 255, 180, 0.12); }
+  .cta-button.copied { color: var(--amber); border-color: var(--amber); }
+  #clanker-prompt { position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+  /* section header */
+  .sec {
+    color: var(--amber);
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    margin: 1.8rem 0 0.5rem;
+    border-bottom: 1px dashed var(--amber-dim);
+    padding-bottom: 0.2rem;
+  }
+  .sec::before { content: "» "; color: var(--amber-dim); }
+
+  /* pattern cards */
+  details {
+    border: 1px solid var(--phosphor-deep);
+    margin: 0.45rem 0;
+    background: rgba(15, 25, 15, 0.35);
+  }
+  details[open] { border-color: var(--phosphor-dim); }
+  summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 0.55rem 0.85rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 0.7rem;
+    align-items: center;
+    font-size: 0.88rem;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before {
+    content: "[+]";
+    color: var(--phosphor-dim);
+    font-size: 0.78rem;
+  }
+  details[open] > summary::before { content: "[−]"; color: var(--amber); }
+  .pn { color: var(--phosphor-dim); font-size: 0.78rem; }
+  .pname { color: var(--phosphor); }
+  .w { color: var(--muted); font-size: 0.72rem; }
+  .pill {
+    font-size: 0.7rem;
+    padding: 0.06rem 0.45rem;
+    letter-spacing: 0.06em;
+    border: 1px solid;
+  }
+  .pill.ok   { color: var(--phosphor); border-color: var(--phosphor-dim); background: rgba(60,140,60,0.12); }
+  .pill.ko   { color: var(--red);      border-color: var(--red-dim);      background: rgba(140,30,30,0.18); }
+  .pill.note { color: var(--amber);    border-color: var(--amber-dim);    background: rgba(140,90,20,0.18); }
+
+  .body {
+    padding: 0.4rem 0.85rem 0.85rem;
+    border-top: 1px dashed var(--phosphor-deep);
+    font-size: 0.85rem;
+  }
+  .block { margin: 0.65rem 0 0; }
+  .block .label {
+    color: var(--amber-dim);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.2rem;
+  }
+  .block .label::before { content: "── "; }
+  .block .label::after { content: " ───────────────────────────────────"; color: var(--phosphor-deep); }
+  .block p, .block ul { margin: 0; color: var(--phosphor); }
+  .block ul { padding-left: 1.4rem; }
+  .block ul li { margin: 0.15rem 0; }
+  .block ul li::marker { color: var(--phosphor-dim); }
+  .block.ko-fix .label { color: var(--red); }
+  .block.ko-fix .label::after { color: var(--red-dim); }
+  .block.ko-fix ul li::marker { color: var(--red); }
+
+  code {
+    color: var(--amber);
+    background: rgba(60, 40, 8, 0.3);
+    padding: 0 0.2rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="head">
+  <div class="row">
+    <h1>CLANKER-SCORE :: acme-payments-api<span class="blink"></span></h1>
+    <div class="meta">SESSION <span>0x7af2</span> · BOOT <span>2026-05-25 14:32 CEST</span> · TTY <span>/dev/clanker0</span></div>
+  </div>
+</div>
+
+<div class="score-box">
+  <pre class="ascii">
+ ┌──────────────────────────────────────────────────────────────────────┐
+ │  SCORE     <span style="font-size: 1.45rem;">72</span> / 100        WEIGHTED ACROSS 18 PATTERNS         │
+ │                                                                      │
+ │  [████████████████████████████████████░░░░░░░░░░░░░]  72%            │
+ │                                                                      │
+ │  BAND  ▒▒▒ AMBER ▒▒▒                          STATUS  needs_attention│
+ └──────────────────────────────────────────────────────────────────────┘</pre>
+  <div class="footline">∎ 11 ok &nbsp;·&nbsp; 4 note &nbsp;·&nbsp; 3 ko &nbsp;·&nbsp; bands: ≥80 grn │ 60-79 amb │ <60 red</div>
+</div>
+
+<div class="cta">
+  <div class="cta-text">
+    <div class="prompt">ask-clanker --improve --parallel</div>
+    <div class="sub">Pipes a remediation prompt to your paste buffer. One subagent per section, dispatched in parallel.</div>
+  </div>
+  <button type="button" class="cta-button" id="copy-prompt-btn">▸ COPY PROMPT</button>
+</div>
+<textarea id="clanker-prompt" readonly aria-hidden="true" tabindex="-1">You are a coding agent tasked with improving this repository's coding-agent efficiency setup, based on a /clanker-score audit (score: 72/100, generated 2026-05-25 14:32 CEST). [...]</textarea>
+
+<div class="sec">AGENT EFFICIENCY FOUNDATIONS</div>
+
+<details>
+  <summary><span class="pn">01</span> <span class="pname">Reproducible Development Environment</span> <span class="w">w=6</span> <span class="pill ok">OK</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>A fresh clone of <code>acme-payments-api</code> must boot without tribal knowledge. Every minute decoding undocumented setup is a minute not shipping.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>Documented commands tied to real files: Dockerfile, Makefile, or a CLAUDE.md setup section that matches what the codebase actually uses.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>Makefile</code> exposes <code>make bootstrap</code>, <code>make dev</code>, <code>make test</code></li>
+      <li><code>.devcontainer/devcontainer.json</code> present, references the same Makefile targets</li>
+      <li><code>CLAUDE.md</code> §Setup lists the exact same commands — no drift</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">02</span> <span class="pname">Package Manager &amp; Runtime Pinning</span> <span class="w">w=4</span> <span class="pill ok">OK</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>Mismatched package managers and runtime versions break builds, corrupt lockfiles, and diverge from production.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>One package manager per ecosystem, one lockfile, runtime pinned via .nvmrc / pyproject.toml.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>.nvmrc</code> pins Node <code>20.11.1</code>, <code>package.json#packageManager</code> = <code>pnpm@9.4.0</code></li>
+      <li>Single lockfile <code>pnpm-lock.yaml</code>, no stray <code>package-lock.json</code> or <code>yarn.lock</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">03</span> <span class="pname">Repo Map</span> <span class="w">w=5</span> <span class="pill ko">KO</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>Without a top-level map, agents grep the whole tree to find features and waste tokens in monorepos. A 30-line map saves hundreds of exploratory tool calls.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>REPO_MAP.md or labeled README section listing every top-level folder with one-line purpose. Coverage matches <code>ls</code> output and stays current.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li>No <code>REPO_MAP.md</code> at root</li>
+      <li>14 top-level folders (apps/, packages/, infra/, scripts/, …) — none documented in README or CLAUDE.md</li>
+      <li><code>pnpm-workspace.yaml</code> declares 9 packages with no descriptions</li>
+    </ul></div>
+    <div class="block ko-fix"><div class="label">REMEDIATION</div><ul>
+      <li>Create <code>REPO_MAP.md</code> at root with one-line purpose per top-level folder</li>
+      <li>Link from <code>CLAUDE.md</code> §Layout → <code>REPO_MAP.md</code></li>
+      <li>Add owner + entry point for each apps/* package (settle-api, dashboard-web, webhooks-worker)</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">04</span> <span class="pname">Context Cascade</span> <span class="w">w=4</span> <span class="pill ok">OK</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>One bloated root CLAUDE.md forces every task to load thousands of lines of mostly-irrelevant guidance.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>Root stays under ~200 lines; subtree CLAUDE.md files carry local commands and conventions where they apply.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li>Root <code>CLAUDE.md</code> is 142 lines, focused on global rules</li>
+      <li>Subtree files at <code>apps/settle-api/CLAUDE.md</code> and <code>apps/dashboard-web/CLAUDE.md</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">05</span> <span class="pname">CLAUDE.md Quality</span> <span class="w">w=10</span> <span class="pill note">OK / NOTE</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>Generic platitudes and stale instructions cost context without value, and sometimes mislead.</p></div>
+    <div class="block"><div class="label">WHAT GOOGLE LOOKS LIKE</div><p>Concise, repo-specific. Captures what cannot be derived from reading files.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li>Strong on commands, branch conventions, and the Stripe-webhook signing gotcha</li>
+      <li>Bottom 30 lines reads like generic "write tests, write clean code" filler — could be trimmed</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="sec">CONTEXT &amp; TOOLING</div>
+
+<details>
+  <summary><span class="pn">06</span> <span class="pname">Noise Filter</span> <span class="w">w=6</span> <span class="pill ko">KO</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>When generated and vendored folders are searchable, every grep returns hundreds of irrelevant hits and reads burn context on minified code.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>Committed <code>.claude/settings.json</code> with <code>permissions.deny</code> for noisy paths that actually exist.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>.claude/settings.json</code> exists but has no <code>permissions.deny</code> block</li>
+      <li>Repo contains <code>packages/sdk-js/dist/</code> (3.2 MB), <code>infra/cdk.out/</code>, and <code>coverage/</code> — all searchable</li>
+      <li>Only filter is in <code>.claude/settings.local.json</code> (Bob's machine only)</li>
+    </ul></div>
+    <div class="block ko-fix"><div class="label">REMEDIATION</div><ul>
+      <li>Add to <code>.claude/settings.json</code> → <code>permissions.deny</code>: <code>Read(packages/*/dist/**)</code>, <code>Read(infra/cdk.out/**)</code>, <code>Read(coverage/**)</code></li>
+      <li>Commit the file; remove the duplicate rules from <code>.claude/settings.local.json</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">07</span> <span class="pname">Symbol Lookup</span> <span class="w">w=8</span> <span class="pill ok">OK</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>LSP-backed lookup turns a multi-step grep into one deterministic call. Critical for large or strongly typed codebases.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>An MCP server with LSP support (e.g. serena) configured for the dominant languages.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>.mcp.json</code> registers <code>serena</code> with TypeScript + Python LSPs</li>
+      <li>Covers ~98% of source lines (TS + Py); only Terraform HCL is unindexed</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">08</span> <span class="pname">Large-Repo File Discovery</span> <span class="w">w=5</span> <span class="pill note">OK / NOTE</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>In a monorepo, blind grep and find produce slow noisy results. Discovery aids prevent context burn.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>REPO_MAP.md, workspace manifest, or "how to find files" CLAUDE.md section.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>pnpm-workspace.yaml</code> + <code>turbo.json</code> provide structure</li>
+      <li>No explicit "find files" section in CLAUDE.md — note rather than KO because workspace manifest covers most discovery needs</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="sec">VERIFICATION &amp; SAFETY</div>
+
+<details>
+  <summary><span class="pn">09</span> <span class="pname">Deterministic Checks</span> <span class="w">w=10</span> <span class="pill ko">KO</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>"Remember to run the linter" in prose gets forgotten. Hooks make checks unavoidable.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p><code>.claude/settings.json</code> wires <code>PostToolUse</code> hooks on Edit/Write to real lint/typecheck/test commands.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li>No <code>hooks</code> block in <code>.claude/settings.json</code></li>
+      <li>Scripts <code>pnpm lint</code>, <code>pnpm typecheck</code>, <code>pnpm test</code> all exist in <code>package.json</code></li>
+    </ul></div>
+    <div class="block ko-fix"><div class="label">REMEDIATION</div><ul>
+      <li>Add <code>hooks.PostToolUse</code> in <code>.claude/settings.json</code> matching Edit|Write|MultiEdit → <code>pnpm lint --filter ...[changed]</code></li>
+      <li>Wire a second hook for <code>*.ts</code> files → <code>pnpm typecheck</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">10</span> <span class="pname">Verifiable Work Loop</span> <span class="w">w=9</span> <span class="pill ok">OK</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>An agent that can't verify its own work has to hand back to a human just to know if tests pass.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>Explicit Verification section with exact install/lint/typecheck/test/build commands.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>CLAUDE.md</code> §Verification lists 6 commands in order; <code>make verify</code> wraps them all</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">11</span> <span class="pname">CI Parity</span> <span class="w">w=4</span> <span class="pill ok">OK</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>Local checks weaker than CI means work passes locally and fails in pipeline. Every CI-only check is a trap.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>Each meaningful CI check has a local equivalent, ideally one <code>make verify</code>.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>.github/workflows/ci.yml</code> calls the same <code>make verify</code> documented in CLAUDE.md</li>
+      <li>Only divergence: CI runs <code>pnpm audit</code>, locally optional — flagged in CLAUDE.md</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">12</span> <span class="pname">Fast Feedback / Focused Tests</span> <span class="w">w=6</span> <span class="pill ok">OK</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>If the only test path is the full suite, agents either wait minutes or skip testing entirely.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>Document how to run a single file, a package, and the whole suite with concrete examples.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li>CLAUDE.md shows <code>pnpm --filter settle-api test path/to/file.test.ts</code></li>
+      <li><code>test:watch</code> and <code>test:focused</code> scripts present in apps/settle-api</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">13</span> <span class="pname">Permission Hardening</span> <span class="w">w=6</span> <span class="pill ko">KO</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>Without deny rules, one bad agent call can leak secrets, corrupt git, or wipe local work.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>Committed <code>.claude/settings.json</code> with deny rules for destructive bash and sensitive files.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>.claude/settings.json</code> committed but <code>permissions.deny</code> contains only 2 generic patterns</li>
+      <li>No deny rule for <code>git push --force*</code>, <code>git reset --hard</code>, <code>rm -rf</code></li>
+      <li><code>.env</code> and <code>.pem</code> reads not denied</li>
+    </ul></div>
+    <div class="block ko-fix"><div class="label">REMEDIATION</div><ul>
+      <li>Add to <code>permissions.deny</code>: <code>Bash(git push --force*)</code>, <code>Bash(git reset --hard*)</code>, <code>Bash(rm -rf*)</code></li>
+      <li>Add: <code>Read(.env*)</code> (except <code>.env.example</code>), <code>Read(**/*.pem)</code>, <code>Read(**/secrets/**)</code></li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">14</span> <span class="pname">Local Config Hygiene</span> <span class="w">w=3</span> <span class="pill ok">OK</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>Ungitignored local Claude config and .env files leak into history and shared diffs.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>.gitignore excludes CLAUDE.local.md, settings.local.json, .env variants, .pem.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>.gitignore</code> contains all expected patterns at lines 24–31</li>
+      <li>No tracked files match those patterns</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="sec">REUSABLE AGENT WORKFLOWS</div>
+
+<details>
+  <summary><span class="pn">15</span> <span class="pname">Just-in-Time Skill</span> <span class="w">w=3</span> <span class="pill note">OK / NOTE</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>Stuffing every workflow into CLAUDE.md wastes context. Skills load on demand.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p><code>.claude/skills/</code> with narrow, well-described skills.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li>Two skills present: <code>release/</code> and <code>db-migration/</code>, both with SKILL.md</li>
+      <li>Legacy <code>.claude/commands/security-review.md</code> still around — consider migrating</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">16</span> <span class="pname">Agent Output / PR Hygiene</span> <span class="w">w=3</span> <span class="pill note">OK / NOTE</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>Without expectations, agents improvise PR summaries that omit tests, risks, rollback.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>PR template + CLAUDE.md PR section covering summary, verification, risks, rollback.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>.github/PULL_REQUEST_TEMPLATE.md</code> covers summary + tests but no rollback notes</li>
+      <li>Attribution policy not stated — Claude commits go through anonymously</li>
+    </ul></div>
+  </div>
+</details>
+
+<details>
+  <summary><span class="pn">17</span> <span class="pname">Custom Subagents</span> <span class="w">w=4</span> <span class="pill ok">OK</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>Recurring high-risk reviews benefit from focused subagents.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p><code>.claude/agents/</code> matched to the repo's actual risk surface.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li>Three subagents: <code>payment-flow-reviewer</code>, <code>db-migration-reviewer</code>, <code>webhook-replay-tester</code></li>
+      <li>All have tool allowlists and read-only scope</li>
+    </ul></div>
+  </div>
+</details>
+
+<div class="sec">TEAM ROLLOUT &amp; CONTINUOUS IMPROVEMENT</div>
+
+<details>
+  <summary><span class="pn">18</span> <span class="pname">Harness Bundle</span> <span class="w">w=4</span> <span class="pill note">OK / NOTE</span></summary>
+  <div class="body">
+    <div class="block"><div class="label">WHY</div><p>When config lives only in one repo, every other repo reinvents it and improvements don't propagate.</p></div>
+    <div class="block"><div class="label">WHAT GOOD LOOKS LIKE</div><p>Harness packaged as a plugin or pulled from a shared marketplace.</p></div>
+    <div class="block"><div class="label">CURRENT STATE</div><ul>
+      <li><code>.claude/</code> references <code>@acme/clanker-harness@1.4.0</code> via <code>enabledPlugins</code></li>
+      <li>Plugin is internal but not all team repos consume it yet (4 of 11)</li>
+    </ul></div>
+  </div>
+</details>
+
+</div>
+<script>
+(function () {
+  var btn = document.getElementById('copy-prompt-btn');
+  var src = document.getElementById('clanker-prompt');
+  if (!btn || !src) return;
+  var orig = btn.textContent;
+  btn.addEventListener('click', function () {
+    var text = src.value;
+    var done = function () {
+      btn.textContent = '✓ COPIED';
+      btn.classList.add('copied');
+      setTimeout(function () { btn.textContent = orig; btn.classList.remove('copied'); }, 2000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {
+        src.style.left = '0'; src.select(); document.execCommand('copy'); src.style.left = '-9999px'; done();
+      });
+    } else {
+      src.style.left = '0'; src.select(); document.execCommand('copy'); src.style.left = '-9999px'; done();
+    }
+  });
+})();
+</script>
+</body>
+</html>

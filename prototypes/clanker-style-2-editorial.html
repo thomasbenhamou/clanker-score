@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Clanker Score — My Repo · Audit</title>
+<style>
+  :root{
+    --paper:#f4efe6;
+    --paper-deep:#ece5d6;
+    --ink:#141210;
+    --ink-soft:#3d3933;
+    --muted:#7a7166;
+    --rule:#1b1815;
+    --hair:#bdb6a8;
+    --signal:#c8102e;
+    --signal-soft:#fae1e3;
+    --azure:#1d4076;
+    --azure-soft:#dae3f1;
+    --amber:#8a5a00;
+    --amber-soft:#f4e6c3;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink)}
+  body{
+    font-family:"Iowan Old Style","Charter","Georgia","Times New Roman",serif;
+    font-size:16px;line-height:1.5;
+    max-width:1140px;margin:0 auto;padding:48px 56px 80px;
+  }
+  .mono{font-family:"IBM Plex Mono","SF Mono","Menlo",monospace}
+  .sans{font-family:"Neue Haas Grotesk","Helvetica Neue","Inter","Arial",sans-serif}
+
+  /* MASTHEAD */
+  .masthead{
+    border-top:6px solid var(--rule);border-bottom:1px solid var(--rule);
+    padding:14px 0 12px;display:grid;
+    grid-template-columns:1fr auto auto;gap:24px;align-items:end;
+  }
+  .mast-title{
+    font-family:"Iowan Old Style","Charter","Georgia",serif;
+    font-weight:900;font-size:42px;line-height:0.95;letter-spacing:-0.02em;
+    color:var(--ink);margin:0;
+  }
+  .mast-sub{font-family:inherit;font-style:italic;font-size:14px;color:var(--ink-soft);margin-top:6px}
+  .mast-meta{font-family:"IBM Plex Mono","SF Mono",monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);text-align:right;line-height:1.5}
+
+  /* DEK */
+  .dek{
+    margin:18px 0 0;padding:0 0 0 22px;
+    border-left:2px solid var(--signal);
+    font-family:"Iowan Old Style",serif;font-size:15px;font-style:italic;
+    color:var(--ink-soft);max-width:680px;line-height:1.55;
+  }
+
+  /* SCORE — newspaper feature treatment */
+  .feature{
+    margin:34px 0 22px;
+    display:grid;grid-template-columns:auto 1fr;gap:36px;align-items:start;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+    padding:28px 0;
+  }
+  .feature .figure{
+    font-family:"Iowan Old Style","Charter","Georgia",serif;
+    font-weight:900;font-size:188px;line-height:0.85;
+    letter-spacing:-0.06em;color:var(--amber);
+    font-variant-numeric:tabular-nums;
+    text-align:right;min-width:240px;
+  }
+  .feature .figure .sup{
+    display:block;font-family:"IBM Plex Mono",monospace;
+    font-size:13px;font-weight:500;color:var(--ink-soft);
+    letter-spacing:0.12em;margin-top:8px;text-transform:uppercase;
+  }
+  .feature .lede{padding-top:18px}
+  .feature .lede h2{
+    font-family:"Neue Haas Grotesk","Helvetica Neue","Inter",sans-serif;
+    font-weight:800;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;
+    color:var(--signal);margin:0 0 12px;
+  }
+  .feature .lede p{margin:0 0 8px;font-size:18px;line-height:1.4;color:var(--ink)}
+  .feature .lede p.first-line::first-line{font-weight:700;letter-spacing:-0.005em}
+  .feature .lede dl{
+    margin:18px 0 0;display:grid;
+    grid-template-columns:auto 1fr;gap:6px 18px;
+    font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  }
+  .feature .lede dt{color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-size:11px}
+  .feature .lede dd{margin:0;color:var(--ink)}
+  .feature .lede dd .pos{color:#0d6c2a;font-weight:600}
+  .feature .lede dd .neg{color:var(--signal);font-weight:600}
+
+  /* CTA */
+  .cta{
+    margin:8px 0 36px;padding:24px 28px;
+    background:var(--ink);color:var(--paper);
+    display:grid;grid-template-columns:1fr auto;align-items:center;gap:28px;
+  }
+  .cta-kicker{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:0.18em;
+    text-transform:uppercase;color:#d0c4a8;margin-bottom:6px;
+  }
+  .cta-headline{
+    font-family:"Iowan Old Style",serif;font-weight:800;font-size:24px;
+    line-height:1.15;letter-spacing:-0.015em;margin:0;
+  }
+  .cta-body{font-family:"Iowan Old Style",serif;font-style:italic;font-size:14.5px;color:#d8cdb5;margin:6px 0 0;max-width:560px}
+  .cta button{
+    font-family:"Neue Haas Grotesk","Helvetica Neue","Inter",sans-serif;
+    font-weight:700;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;
+    background:var(--paper);color:var(--ink);border:0;
+    padding:14px 22px;cursor:pointer;
+  }
+  .cta button:hover{background:var(--paper-deep)}
+  .cta button.copied{background:#cfe9c7;color:#143517}
+  #clanker-prompt{position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0}
+
+  /* SECTION HEADINGS */
+  .section{
+    margin:50px 0 6px;display:grid;
+    grid-template-columns:auto 1fr;gap:22px;align-items:baseline;
+    padding-bottom:6px;border-bottom:2px solid var(--rule);
+  }
+  .section .num{
+    font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:13px;
+    color:var(--signal);letter-spacing:0.1em;text-transform:uppercase;
+  }
+  .section h2{
+    font-family:"Iowan Old Style","Charter",serif;font-weight:800;
+    font-size:24px;letter-spacing:-0.015em;color:var(--ink);margin:0;
+  }
+
+  /* PATTERN ROWS */
+  details{
+    border-bottom:1px solid var(--hair);
+    margin:0;
+  }
+  summary{
+    list-style:none;cursor:pointer;
+    padding:18px 0 18px 64px;
+    display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:baseline;
+    position:relative;
+  }
+  summary::-webkit-details-marker{display:none}
+  /* marginalia number */
+  summary > .marg{
+    position:absolute;left:0;top:18px;width:48px;text-align:right;
+    font-family:"Iowan Old Style","Charter",serif;font-weight:800;font-size:28px;
+    line-height:1;color:var(--signal);letter-spacing:-0.02em;
+    font-variant-numeric:tabular-nums;
+  }
+  summary > .marg::after{content:"";display:block;width:34px;height:1px;background:var(--rule);margin:6px 0 0 14px}
+  summary .name{
+    font-family:"Iowan Old Style","Charter",serif;font-weight:600;font-size:21px;
+    letter-spacing:-0.012em;color:var(--ink);
+  }
+  summary .caret{
+    font-family:"IBM Plex Mono",monospace;color:var(--muted);font-size:14px;
+    transition:transform .15s ease;justify-self:end;
+  }
+  details[open] > summary .caret{transform:rotate(90deg)}
+  summary .meta{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;
+    letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);
+    text-align:right;line-height:1.5;
+  }
+  summary .meta .verdict{
+    display:inline-block;padding:3px 8px;font-weight:700;letter-spacing:0.14em;
+    border:1px solid;
+  }
+  .verdict.ok{color:#0d6c2a;border-color:#0d6c2a;background:#e6f0e1}
+  .verdict.ko{color:var(--signal);border-color:var(--signal);background:var(--signal-soft)}
+  .verdict.note{color:var(--amber);border-color:var(--amber);background:var(--amber-soft)}
+
+  .body-pane{
+    padding:6px 0 32px 64px;
+    display:grid;grid-template-columns:1fr 1fr;column-gap:36px;row-gap:24px;
+  }
+  .field{margin:0}
+  .field .kicker{
+    font-family:"Neue Haas Grotesk","Helvetica Neue","Inter",sans-serif;
+    font-size:10.5px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;
+    color:var(--signal);margin:0 0 6px;
+  }
+  .field p{margin:0;font-family:"Iowan Old Style","Charter",serif;font-size:15.5px;line-height:1.5;color:var(--ink)}
+  .field ul{margin:0;padding-left:18px;font-family:"Iowan Old Style","Charter",serif;font-size:15.5px;line-height:1.5}
+  .field ul li{margin:4px 0}
+  .field.observed .kicker{color:var(--ink)}
+  .field.fix .kicker{color:var(--azure)}
+  .field.fix{grid-column:1 / -1;border-top:1px solid var(--hair);padding-top:18px;margin-top:6px}
+  .field code{font-family:"IBM Plex Mono",monospace;font-size:13.5px;background:var(--paper-deep);padding:1px 4px}
+
+  /* FOOTER */
+  footer{
+    margin-top:64px;border-top:1px solid var(--rule);padding-top:14px;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;
+    letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div>
+    <h1 class="mast-title">The Clanker Audit</h1>
+    <div class="mast-sub">A weighted appraisal of one repository’s readiness for autonomous engineering</div>
+  </div>
+  <div class="mast-meta">No. 042<br>Vol. I</div>
+  <div class="mast-meta">Mon · 25 May 2026<br>14:32 UTC</div>
+</div>
+
+<p class="dek">My-Repo earns a middling score across eighteen patterns — strong on verification, careless on safety. Five items are failing outright; four more carry a quiet warning. A short remediation prompt sits below.</p>
+
+<section class="feature">
+  <div class="figure">61<span class="sup">out of one hundred · band amber</span></div>
+  <div class="lede">
+    <h2>The figure, in summary</h2>
+    <p class="first-line">A weighted score across eighteen tested patterns. A perfect repository scores 100; this one falls in the amber band, between 60 and 79, where the agent can work but does so under friction.</p>
+    <dl>
+      <dt>Passed</dt><dd><span class="pos">9 patterns</span> · 56.1 weighted points</dd>
+      <dt>Warning</dt><dd>4 patterns · 12.5 weighted points</dd>
+      <dt>Failing</dt><dd><span class="neg">5 patterns</span> · 31 weighted points unscored</dd>
+      <dt>Highest miss</dt><dd>Pattern 09 · Deterministic Checks <span class="mono">(w·10)</span></dd>
+    </dl>
+  </div>
+</section>
+
+<section class="cta">
+  <div>
+    <div class="cta-kicker">Recommended next step</div>
+    <h3 class="cta-headline">Ask your clanker to clean this up.</h3>
+    <p class="cta-body">Copy the prompt below into a fresh Claude Code session. One subagent will be dispatched per failing section, in parallel, to implement every proposed fix.</p>
+  </div>
+  <button type="button" id="copy-prompt-btn">Copy the prompt</button>
+</section>
+<textarea id="clanker-prompt" readonly aria-hidden="true" tabindex="-1">You are a coding agent tasked with improving this repository's coding-agent efficiency setup, based on a /clanker-score audit (score: 61/100, generated 2026-05-25 14:32 UTC).
+
+Dispatch ONE subagent per section IN PARALLEL using the Task tool with subagent_type "general-purpose".
+
+## Section 1 — Agent Efficiency Foundations
+### Pattern 3 — Repo Map
+- Create REPO_MAP.md with one-line purpose for each top-level folder.
+
+## Section 2 — Context &amp; Tooling
+### Pattern 6 — Noise Filter
+- Add .claude/settings.json with permissions.deny for node_modules/, dist/, .next/.
+
+## Section 3 — Verification &amp; Safety
+### Pattern 9 — Deterministic Checks
+- Wire PostToolUse hook to `pnpm lint --filter ...` on Edit/Write.
+### Pattern 13 — Permission Hardening
+- Add deny entries for destructive bash and sensitive file reads.
+
+## Section 4 — Reusable Agent Workflows
+### Pattern 17 — Custom Subagents
+- Create .claude/agents/security-reviewer.md and migration-reviewer.md.</textarea>
+<script>
+(function(){
+  var btn=document.getElementById('copy-prompt-btn');
+  var src=document.getElementById('clanker-prompt');
+  if(!btn||!src)return;
+  var original=btn.textContent;
+  function flash(){btn.textContent='Copied to clipboard';btn.classList.add('copied');setTimeout(function(){btn.textContent=original;btn.classList.remove('copied')},1800)}
+  btn.addEventListener('click',function(){
+    var t=src.value;
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(flash,function(){src.select();document.execCommand('copy');flash()});
+    } else { src.select(); document.execCommand('copy'); flash(); }
+  });
+})();
+</script>
+
+<div class="section"><div class="num">§ I</div><h2>Agent Efficiency Foundations</h2></div>
+
+<details>
+  <summary>
+    <span class="marg">01</span>
+    <span class="name">Reproducible Development Environment</span>
+    <span class="meta">weight 6 · <span class="verdict note">Note</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>Without a clean-checkout install path, agents waste cycles guessing at undocumented local setup and hit “works on my machine” failures.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>A fresh clone can be installed, run, tested, and built using documented commands tied to real files — devcontainer, Dockerfile, Makefile, justfile, or a setup section in <code>CLAUDE.md</code>.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li>README has setup steps but no Makefile or devcontainer.</li><li>package.json scripts present but undocumented in CLAUDE.md.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Add a <code>justfile</code> with <code>install</code> / <code>dev</code> / <code>test</code> / <code>build</code> targets.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">02</span>
+    <span class="name">Package Manager &amp; Runtime Pinning</span>
+    <span class="meta">weight 4 · <span class="verdict ok">Ok</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>When the package manager or runtime version is ambiguous, agents may run npm in a pnpm project, use the wrong runtime, or generate a second lockfile that conflicts with CI.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>One package manager per ecosystem with a single lockfile; runtime versions pinned via <code>.nvmrc</code> / <code>.tool-versions</code> / <code>pyproject.toml</code>.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li><code>pnpm-lock.yaml</code> present; <code>packageManager: pnpm@9.7.0</code>.</li><li><code>.nvmrc</code> pins <code>node 22.6.0</code>.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">03</span>
+    <span class="name">Repo Map</span>
+    <span class="meta">weight 5 · <span class="verdict ko">Ko</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>Without a top-level map, agents waste tokens grepping the whole tree to figure out where features live — particularly in monorepos.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>A <code>REPO_MAP.md</code> lists every top-level folder with a one-line purpose, ideally with owner and main entry point.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li>No <code>REPO_MAP.md</code> found.</li><li>README lists 47 packages — none with descriptions.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Create <code>REPO_MAP.md</code> with one-line purpose for each top-level folder.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">04</span>
+    <span class="name">Context Cascade</span>
+    <span class="meta">weight 4 · <span class="verdict ok">Ok</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>A single bloated <code>CLAUDE.md</code> forces agents to load thousands of lines of mostly-irrelevant guidance on every task, burning context.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>The root <code>CLAUDE.md</code> stays focused on global rules (under ~200 lines); subtree files carry local commands and gotchas where they apply.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li>Root <code>CLAUDE.md</code> is 142 lines.</li><li>Three subtree files in <code>packages/api</code>, <code>packages/web</code>, <code>packages/cli</code>.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">05</span>
+    <span class="name">CLAUDE.md Quality</span>
+    <span class="meta">weight 10 · <span class="verdict note">Note</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>A <code>CLAUDE.md</code> full of generic platitudes or stale instructions costs context without adding value, and sometimes actively misleads.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>Concise, repo-specific, aligned with actual scripts and CI. Captures the non-obvious; skips standard language conventions.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li>22 lines of generic “write clean code” advice.</li><li>Verification commands present and match <code>package.json</code> scripts.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Remove generic style advice; keep only repo-specific gotchas.</li></ul></div>
+  </div>
+</details>
+
+<div class="section"><div class="num">§ II</div><h2>Context &amp; Tooling</h2></div>
+
+<details>
+  <summary>
+    <span class="marg">06</span>
+    <span class="name">Noise Filter</span>
+    <span class="meta">weight 6 · <span class="verdict ko">Ko</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>When <code>node_modules</code>, <code>dist</code>, <code>vendor</code>, <code>coverage</code>, and generated SDK folders are searchable, every grep returns hundreds of irrelevant hits.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>A committed <code>.claude/settings.json</code> uses <code>permissions.deny</code> to block reads of noisy/generated paths that actually exist in the repo.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li>No <code>.claude/settings.json</code> found.</li><li><code>node_modules</code> and <code>dist</code> are searchable.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Add <code>.claude/settings.json</code> with <code>permissions.deny</code> for <code>node_modules/</code>, <code>dist/</code>, <code>.next/</code>.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">07</span>
+    <span class="name">Symbol Lookup</span>
+    <span class="meta">weight 8 · <span class="verdict ok">Ok</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>Without LSP-backed code intelligence, agents fall back to grep for definitions and references — slow, noisy, and easily fooled by name collisions.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>An MCP server with LSP support (e.g. <code>serena</code>) is configured for the dominant language(s) and visible in <code>.mcp.json</code>.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li><code>.mcp.json</code> declares <code>serena</code> for TypeScript and Python.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">08</span>
+    <span class="name">Large-Repo File Discovery</span>
+    <span class="meta">weight 5 · <span class="verdict note">Note</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>In a monorepo with thousands of files, blind grep and find produce slow, noisy results and exhaust context before the agent finds the right file.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>At least one of: <code>REPO_MAP.md</code>, a workspace manifest, a fileSuggestion config, or a documented “how to find files” section in <code>CLAUDE.md</code>.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li><code>pnpm-workspace.yaml</code> present.</li><li>No <code>REPO_MAP.md</code>; tree is &lt; 300 files.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Add a short “where to find things” section in <code>CLAUDE.md</code>.</li></ul></div>
+  </div>
+</details>
+
+<div class="section"><div class="num">§ III</div><h2>Verification &amp; Safety</h2></div>
+
+<details>
+  <summary>
+    <span class="marg">09</span>
+    <span class="name">Deterministic Checks</span>
+    <span class="meta">weight 10 · <span class="verdict ko">Ko</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>When quality enforcement is “remember to run the linter” in prose, agents and humans forget. Hooks make checks unavoidable.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p><code>.claude/settings.json</code> wires <code>PostToolUse</code> hooks on Edit/Write/MultiEdit to real project commands.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li>No hooks declared in <code>.claude/settings.json</code>.</li><li>lint and typecheck scripts exist but are not wired to <code>PostToolUse</code>.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Wire <code>PostToolUse</code> hook to <code>pnpm lint --filter</code> on Edit/Write.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">10</span>
+    <span class="name">Verifiable Work Loop</span>
+    <span class="meta">weight 9 · <span class="verdict ok">Ok</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>An agent that cannot verify its own work has to hand back to a human just to know whether the change compiles.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p><code>CLAUDE.md</code> has an explicit “Verification” section listing the exact install / lint / typecheck / test / build commands.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li><code>CLAUDE.md</code> has explicit Verification section with install/lint/typecheck/test/build commands.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">11</span>
+    <span class="name">CI Parity</span>
+    <span class="meta">weight 4 · <span class="verdict note">Note</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>When local agent checks are weaker than CI, work passes locally and fails in the pipeline, forcing rework.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>Every meaningful CI check has a documented local equivalent, ideally wrapped in a single <code>make verify</code>.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li>CI runs <code>pnpm verify</code> which is documented locally.</li><li>ESLint config differs slightly between local and CI.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Align local ESLint with <code>.github/workflows/ci.yml</code>.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">12</span>
+    <span class="name">Fast Feedback / Focused Tests</span>
+    <span class="meta">weight 6 · <span class="verdict ok">Ok</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>If the only documented way to test is “run the full suite”, agents either wait minutes per iteration or skip testing entirely.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p><code>CLAUDE.md</code> documents how to run a single test file, a package/module scope, and the full suite.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li>Single-file test command documented: <code>pnpm test -- path/file</code>.</li><li>Watch mode documented.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">13</span>
+    <span class="name">Permission Hardening</span>
+    <span class="meta">weight 6 · <span class="verdict ko">Ko</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>Without committed deny rules, a coding agent can force-push, hard-reset, <code>rm -rf</code>, or edit <code>.env</code> and key files.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>A committed <code>.claude/settings.json</code> has a <code>permissions.deny</code> block covering destructive bash and sensitive files.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li><code>.claude/settings.json</code> has no deny block.</li><li><code>rm -rf</code> and <code>git push --force</code> are not blocked.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Add deny entries for destructive bash and sensitive file reads.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">14</span>
+    <span class="name">Local Config Hygiene</span>
+    <span class="meta">weight 3 · <span class="verdict ok">Ok</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>When <code>CLAUDE.local.md</code>, <code>settings.local.json</code>, <code>.env</code> files, or private keys are not gitignored, personal config and secrets can be committed by accident.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p><code>.gitignore</code> excludes Claude-local files, <code>.env</code> variants (with <code>.env.example</code> whitelisted), and key/credential patterns.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li><code>.gitignore</code> covers <code>CLAUDE.local.md</code>, <code>settings.local.json</code>, <code>.env*</code>.</li><li>No local files tracked.</li></ul></div>
+  </div>
+</details>
+
+<div class="section"><div class="num">§ IV</div><h2>Reusable Agent Workflows</h2></div>
+
+<details>
+  <summary>
+    <span class="marg">15</span>
+    <span class="name">Just-in-Time Skill</span>
+    <span class="meta">weight 3 · <span class="verdict ok">Ok</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>Stuffing every workflow into <code>CLAUDE.md</code> means agents load it all every session, wasting context.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p><code>.claude/skills/</code> contains narrow, well-described skills with a clear “when to use” description.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li><code>.claude/skills/release/</code> and <code>.claude/skills/migration/</code> present with clear descriptions.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">16</span>
+    <span class="name">Agent Output / PR Hygiene</span>
+    <span class="meta">weight 3 · <span class="verdict note">Note</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>Without explicit PR expectations, agents improvise summaries that omit tests run, risks, rollback notes, or screenshots.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>A PR template tells agents to include summary, verification commands, risks, rollback notes, and UI screenshots.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li><code>.github/PULL_REQUEST_TEMPLATE.md</code> present but no risk/rollback section.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Add Risks and Rollback sections to the PR template.</li></ul></div>
+  </div>
+</details>
+
+<details>
+  <summary>
+    <span class="marg">17</span>
+    <span class="name">Custom Subagents</span>
+    <span class="meta">weight 4 · <span class="verdict ko">Ko</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>Generic subagents handle generic work, but recurring high-risk reviews (security, migrations, performance) benefit from a focused agent.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p><code>.claude/agents/</code> contains project-specific subagents matched to the repo’s actual risk surface.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li>No <code>.claude/agents/</code> folder.</li><li>Repo handles auth and migrations but uses generic agents.</li></ul></div>
+    <div class="field fix"><div class="kicker">Remediation</div><ul><li>Create <code>.claude/agents/security-reviewer.md</code> and <code>migration-reviewer.md</code>.</li></ul></div>
+  </div>
+</details>
+
+<div class="section"><div class="num">§ V</div><h2>Team Rollout &amp; Continuous Improvement</h2></div>
+
+<details>
+  <summary>
+    <span class="marg">18</span>
+    <span class="name">Harness Bundle</span>
+    <span class="meta">weight 4 · <span class="verdict ok">Ok</span></span>
+    <span class="caret">▸</span>
+  </summary>
+  <div class="body-pane">
+    <div class="field"><div class="kicker">Why it matters</div><p>When skills, hooks, MCP config, and agents live only in one repo’s <code>.claude/</code> folder, every other repo has to reinvent them.</p></div>
+    <div class="field"><div class="kicker">What good looks like</div><p>The harness is packaged as a plugin or pulled from a shared internal marketplace.</p></div>
+    <div class="field observed"><div class="kicker">Observed</div><ul><li><code>.claude-plugin/plugin.json</code> present; referenced via <code>enabledPlugins</code> in four other repos.</li></ul></div>
+  </div>
+</details>
+
+<footer>
+  <div>End · The Clanker Audit · No. 042</div>
+  <div>Set in Iowan Old Style &amp; IBM Plex Mono</div>
+</footer>
+
+</body>
+</html>
