@@ -118,7 +118,11 @@ Once ALL 18 subagents return, produce a **single self-contained HTML file** as t
 ### How to deliver it
 
 1. Capture the current timestamp by running `date "+%Y-%m-%d %H:%M %Z"` via the `Bash` tool and inject the result into the HTML header.
-2. Write the HTML to a file at the repository root named `agent-efficiency-audit.html` using the `Write` tool. Overwrite if it already exists.
+2. Capture the repo name and a filename-safe timestamp in one shot via the `Bash` tool, e.g.:
+   ```bash
+   echo "clanker-score-$(basename "$(pwd)")-$(date "+%Y%m%d-%H%M%S").html"
+   ```
+   Use the resulting string as the report filename. Write the HTML to a file at the repository root with that exact name using the `Write` tool. Do not overwrite existing reports — a new timestamped file is created each run.
 3. After writing, print the absolute file path to the user on a single line so they can open it. Do not print the HTML inline. Do not add any other commentary, preamble, or summary.
 
 ### HTML requirements

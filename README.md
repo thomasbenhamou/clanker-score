@@ -52,7 +52,7 @@ Each pattern verdict is `OK` (100%), `OK with note` (70%), or `KO` (0%). The tot
 
 ## The report
 
-The skill writes `agent-efficiency-audit.html` at your repo root — a single self-contained file (no external assets) with:
+The skill writes `clanker-score-<reponame>-<timestamp>.html` (e.g. `clanker-score-my-repo-20260525-1742.html`) at your repo root — a single self-contained file (no external assets) with:
 
 - A large prominent **score banner** (green ≥ 80, amber 60–79, red < 60).
 - A **CTA card** under the banner: *"Ask your clanker to improve your set up"* with a **Click to copy prompt** button. Clicking copies a ready-to-paste prompt that dispatches one subagent per section to implement every proposed fix in parallel.
@@ -80,7 +80,7 @@ From inside a Claude Code session at the root of the repository you want to audi
 /clanker-score
 ```
 
-Claude will dispatch 18 read-only subagents in parallel, then write `agent-efficiency-audit.html`. Open it in your browser, and if you want the gaps fixed, click **Click to copy prompt** and paste the result back into Claude Code (or any other coding agent).
+Claude will dispatch 18 read-only subagents in parallel, then write a timestamped `clanker-score-<reponame>-<timestamp>.html` at the repo root. Open it in your browser, and if you want the gaps fixed, click **Click to copy prompt** and paste the result back into Claude Code (or any other coding agent).
 
 ## How it works
 
