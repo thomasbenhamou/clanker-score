@@ -130,7 +130,7 @@ Once ALL 18 subagents return, produce a **single self-contained HTML file** as t
 - Output must be a complete `<!DOCTYPE html>` document, self-contained (all CSS inline in a `<style>` block, no external assets). One small inline `<script>` is permitted **only** to power the CTA card's copy-to-clipboard button — no other scripts.
 - Clear, light background. Dark, high-contrast text. Generous spacing, separators, and light pastel accents inside cards for readability.
 - **Header** at the top: an `<h1>` title plus a timestamp line showing when the audit was generated (use the value captured via the `date` command).
-- **Total Score banner** immediately after the header: one very large prominent number `XX`, a `/ 100` label, and a colored band based on the score. The number must be visually dominant (large, bold, tabular-nums).
+- **Total Score banner** immediately after the header: one very large prominent number `XX`, an `out of 100` label, a `weighted across 18 patterns` sub-line, and a colored band based on the score. The number must be visually dominant (large, bold, tabular-nums).
 - **CTA card** immediately after the Total Score banner, before any `<h2>` section heading. The card must be highly visible (vibrant accent background, white text, soft shadow). It contains the message `Ask your clanker to improve your set up` as the headline, one short supporting sentence, and a prominent **Click to copy prompt** button. Clicking the button copies the generated remediation prompt (see **Remediation prompt** section below) to the clipboard. Render the card even when there are no `KO` patterns — in that case the prompt simply says everything passed and there is nothing to do.
 - Split the per-pattern detail into the four section groups below using `<h2>` headings.
 - One **foldable card** per pattern using a `<details>` element. Cards are collapsed by default.
@@ -183,7 +183,7 @@ Each pattern has a fixed weight (sum = 100). Convert the subagent verdict to a p
 total_score = Σ (weight_i × verdict_pct_i) / 100
 ```
 
-Round to the nearest integer for display. Always shown as `XX / 100`.
+Round to the nearest integer for display. Shown as the large number `XX` next to the `out of 100` label.
 
 **Score band (color of the banner)**
 
@@ -329,7 +329,7 @@ Use this skeleton verbatim, replacing `<REPO_NAME>`, `<TIMESTAMP>`, `<SCORE>`, t
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Coding Agent Efficiency Audit — <REPO_NAME></title>
+<title>Clanker Score — <REPO_NAME></title>
 <style>
   :root {
     --bg: #fafafa;
@@ -552,7 +552,7 @@ Use this skeleton verbatim, replacing `<REPO_NAME>`, `<TIMESTAMP>`, `<SCORE>`, t
 </head>
 <body>
 <header>
-  <h1>Coding Agent Efficiency Audit — <REPO_NAME></h1>
+  <h1>Clanker Score — <REPO_NAME></h1>
   <div class="timestamp">Generated <TIMESTAMP></div>
 </header>
 
@@ -560,8 +560,8 @@ Use this skeleton verbatim, replacing `<REPO_NAME>`, `<TIMESTAMP>`, `<SCORE>`, t
 <div class="score green">
   <div class="score-value"><SCORE></div>
   <div class="score-meta">
-    <div class="score-label">out of 100 &middot; Coding Agent Efficiency</div>
-    <div class="score-sub">weighted across 18 patterns &middot; OK = 100% &middot; OK with note = 70% &middot; KO = 0%</div>
+    <div class="score-label">out of 100</div>
+    <div class="score-sub">weighted across 18 patterns</div>
   </div>
 </div>
 

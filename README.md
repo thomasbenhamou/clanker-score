@@ -6,6 +6,8 @@
 
 It dispatches one read-only subagent per pattern in parallel, then produces a single self-contained HTML report.
 
+![Example Clanker Score report](docs/report-screenshot.png)
+
 ## What it scores
 
 18 patterns grouped into five sections, weighted out of 100:
