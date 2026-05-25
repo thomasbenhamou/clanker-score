@@ -1,12 +1,12 @@
 # clanker-score
 
+![Example Clanker Score report](docs/report-screenshot.png)
+
 > Audit whether your repository is optimized for coding-agent efficiency, and get a 0–100 score plus a ready-to-paste prompt to fix every gap.
 
 `clanker-score` is a [Claude Code](https://claude.com/claude-code) skill. It evaluates whether a coding agent (Claude, Cursor, Aider, Codex, …) can quickly understand your repo, safely make changes, verify its own work, and operate with minimal wasted context or hand-holding.
 
 It dispatches one read-only subagent per pattern in parallel, then produces a single self-contained HTML report.
-
-![Example Clanker Score report](docs/report-screenshot.png)
 
 ## What it scores
 
