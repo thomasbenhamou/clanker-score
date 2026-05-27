@@ -17,7 +17,6 @@ Investigation:
   - `enabledPlugins`
   - shared plugin references
 - Look for references to shared internal or external harnesses:
-  - `ai-catalog`
   - `anthropics/claude-plugins-official`
   - company/shared plugin repo
 - Check whether the repo only has local `.claude/` content with no reuse path.
@@ -27,7 +26,7 @@ Useful commands:
 ```bash
 find . -maxdepth 4 \( -name "plugin.json" -o -name "marketplace.json" -o -path "./.claude-plugin/*" -o -name "CLAUDE.md" -o -path "./.claude/*" \) -not -path "*/node_modules/*" -not -path "*/.git/*"
 test -f .claude/settings.json && cat .claude/settings.json
-grep -RniE "enabledPlugins|plugin|marketplace|ai-catalog|claude-plugins-official" . 2>/dev/null | head -100
+grep -RniE "enabledPlugins|plugin|marketplace|claude-plugins-official" . 2>/dev/null | head -100
 ```
 
 Verdict:
